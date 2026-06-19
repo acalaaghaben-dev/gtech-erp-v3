@@ -25,11 +25,6 @@
     #splash .bar  { width:220px;height:3px;background:#21262d;border-radius:99px;overflow:hidden;margin-top:8px; }
     #splash .fill { height:100%;background:linear-gradient(90deg,#0066ff,#00d4ff);border-radius:99px;animation:load 1.8s ease-in-out forwards; }
     @keyframes load { from{width:0%} to{width:100%} }
-    /* Scrollbars */
-    ::-webkit-scrollbar { width:6px;height:6px; }
-    ::-webkit-scrollbar-track { background:transparent; }
-    ::-webkit-scrollbar-thumb { background:#30363d;border-radius:3px; }
-    ::-webkit-scrollbar-thumb:hover { background:#484f58; }
   </style>
 </head>
 <body>
@@ -41,15 +36,24 @@
   <div id="root"></div>
 
   <script>
-    // أول ما شريط التحميل (الأنيميشن) يخلص بعد 1.8 ثانية، السيستم هيحول تلقائياً لصفحة اللوجن
     setTimeout(() => {
       const splash = document.getElementById('splash');
       if (splash) {
         splash.style.opacity = '0';
         setTimeout(() => {
           splash.remove();
-          // التوجيه لصفحة تسجيل الدخول الموجودة في الفولدر الرئيسي
-          window.location.href = '../login.html';
+          
+          // فحص ذكي: هل توجد بيانات جلسة نشطة في المتصفح؟
+          // (قم بتعديل 'sb-access-token' أو اسم المتغير حسب ما تستخدمه في مشروعك)
+          const isUserLoggedIn = localStorage.getItem('user') || localStorage.getItem('supabase.auth.token');
+
+          if (isUserLoggedIn) {
+            // إذا كان مسجل دخول، حوله فوراً للوحة التحكم ودعه يستمتع بالنظام!
+            window.location.href = '../dashboard.html'; 
+          } else {
+            // إذا لم يكن مسجل دخول، أرسله لصفحة تسجيل الدخول
+            window.location.href = '../login.html';
+          }
         }, 400);
       }
     }, 1800);
