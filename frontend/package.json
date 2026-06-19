@@ -1,0 +1,23 @@
+{
+  "name": "@gtech/frontend",
+  "version": "3.0.0",
+  "description": "G-Tech Developer ERP v3 — Tenant Portal | جيتك المطور",
+  "scripts": {
+    "dev":   "vite --port 3000",
+    "build": "vite build",
+    "preview":"vite preview"
+  },
+  "dependencies": {
+    "react":            "^18.2.0",
+    "react-dom":        "^18.2.0",
+    "react-router-dom": "^6.21.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite":                 "^5.0.8",
+    "vite-plugin-pwa":      "^0.17.4",
+    "tailwindcss":          "^3.4.0",
+    "autoprefixer":         "^10.4.16",
+    "postcss":              "^8.4.32"
+  }
+}

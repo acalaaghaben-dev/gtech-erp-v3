@@ -1,0 +1,17 @@
+{
+  "name": "gtech-developer-erp-v3",
+  "version": "3.0.0",
+  "private": true,
+  "description": "G-Tech Developer ERP v3 | جيتك المطور | أ. علاء غبن | 01014868778",
+  "scripts": {
+    "dev":        "cd core && npm run dev",
+    "start":      "cd core && npm start",
+    "install:all":"npm install && cd core && npm install && cd ../frontend && npm install"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "multer":  "^1.4.5-lts.1",
+    "xlsx":    "^0.18.5"
+  },
+  "_comment_dependencies": "express/multer/xlsx are required here (root node_modules) because plugins/*/index.js live as siblings of core/ and Node's module resolution walks UP from plugins/<key>/ to gtech-erp-v3/node_modules — they would NOT be found in core/node_modules. Do not remove."
+}

@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: gtech-erp-api-v3
+    runtime: node
+    region: frankfurt
+    plan: starter
+    buildCommand: npm install && cd core && npm install
+    startCommand: cd core && npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: APP_VERSION
+        value: 3.0.0
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRY
+        value: 8h
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_CLIENT_EMAIL
+        sync: false
+      - key: FIREBASE_PRIVATE_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ALLOWED_ORIGINS
+        value: https://app.gtech-erp.com,https://admin.gtech-erp.com
+      - key: DEVELOPER_NAME
+        value: أ. علاء غبن
+      - key: DEVELOPER_PHONE
+        value: "01014868778"
