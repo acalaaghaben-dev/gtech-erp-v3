@@ -8,8 +8,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="جيتك ERP" />
-  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
-  <link rel="icon" type="image/png" href="/icons/icon-72.png" />
+  <link rel="apple-touch-icon" href="../icons/icon-192.png" />
+  <link rel="icon" type="image/png" href="../icons/icon-72.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -39,12 +39,20 @@
     <div class="bar"><div class="fill"></div></div>
   </div>
   <div id="root"></div>
+
   <script>
-    window.addEventListener('app-ready', () => {
-      const s = document.getElementById('splash');
-      if (s) { s.style.opacity = '0'; setTimeout(() => s.remove(), 400); }
-    });
+    // أول ما شريط التحميل (الأنيميشن) يخلص بعد 1.8 ثانية، السيستم هيحول تلقائياً لصفحة اللوجن
+    setTimeout(() => {
+      const splash = document.getElementById('splash');
+      if (splash) {
+        splash.style.opacity = '0';
+        setTimeout(() => {
+          splash.remove();
+          // التوجيه لصفحة تسجيل الدخول الموجودة في الفولدر الرئيسي
+          window.location.href = '../login.html';
+        }, 400);
+      }
+    }, 1800);
   </script>
-  <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>
