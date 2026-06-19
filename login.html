@@ -110,8 +110,8 @@
 
     function goToDashboard() {
         const basePath = window.location.href.split('?')[0];
-        // التوجيه التلقائي الذكي: جرب الانتقال لـ frontend/index.html مباشرة
-        const targetPath = basePath.replace('login.html', 'frontend/index.html');
+        // التعديل السحري هنا: نتوجه مباشرة لملف الـ dashboard.html الموجود في الفولدر الرئيسي لبره
+        const targetPath = basePath.replace('login.html', 'dashboard.html');
         window.location.replace(targetPath);
     }
 
