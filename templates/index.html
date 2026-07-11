@@ -1,0 +1,2368 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GTech ERP v2.0</title>
+<!-- PWA: تثبيت الاختصار على الشاشة -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1a3c5e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GTech ERP">
+<link rel="apple-touch-icon" href="/static/icons/icon-192x192.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/static/icons/icon-152x152.png">
+<link rel="apple-touch-icon" sizes="144x144" href="/static/icons/icon-144x144.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/static/icons/icon-192x192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/static/icons/icon-512x512.png">
+<!-- PWA Service Worker Registration -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js', {scope: '/'})
+      .then(reg => console.log('GTech SW registered:', reg.scope))
+      .catch(err => console.warn('GTech SW error:', err));
+  });
+}
+</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#f0f4f8;direction:rtl}
+:root{--p:#1a3c5e;--pl:#2563a8;--acc:#e8a020;--sb:#0f2744;--st:#b8cfe8;--sh:#1e3f6a;
+  --ok:#16a34a;--err:#dc2626;--warn:#d97706;--bdr:#d1dae6;--card:#fff;--muted:#5a6a7e}
+.app{display:flex;height:100vh;overflow:hidden}
+/* Sidebar */
+.sidebar{width:230px;background:var(--sb);display:flex;flex-direction:column;flex-shrink:0;transition:width .2s}
+.s-logo{padding:16px;border-bottom:1px solid rgba(255,255,255,.08)}
+.s-logo h2{color:#fff;font-size:15px}.s-logo p{color:var(--st);font-size:10px;margin-top:2px}
+.s-nav{flex:1;overflow-y:auto;padding:4px 0}
+.s-sec{padding:12px 14px 3px;font-size:10px;color:#4a6a8a;text-transform:uppercase;letter-spacing:.8px}
+.s-item{display:flex;align-items:center;gap:9px;padding:9px 15px;cursor:pointer;color:var(--st);font-size:13px;border-right:3px solid transparent;transition:all .15s}
+.s-item:hover{background:var(--sh);color:#fff}
+.s-item.active{background:var(--pl);color:#fff;border-right-color:var(--acc)}
+.s-badge{margin-right:auto;background:var(--acc);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px}
+.s-foot{padding:11px 14px;border-top:1px solid rgba(255,255,255,.08)}
+.s-user{display:flex;align-items:center;gap:9px}
+.s-avatar{width:32px;height:32px;border-radius:50%;background:var(--pl);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700}
+/* Main */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{background:#fff;border-bottom:1px solid var(--bdr);padding:10px 20px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.topbar-title{font-size:16px;font-weight:700;color:var(--p)}
+.topbar-crumb{font-size:11px;color:var(--muted)}
+.topbar-actions{margin-right:auto;display:flex;gap:7px;align-items:center}
+.content{flex:1;overflow-y:auto;padding:18px}
+/* Buttons */
+.btn{padding:7px 13px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:5px;transition:all .15s;text-decoration:none}
+.btn-primary{background:var(--pl);color:#fff}.btn-primary:hover{background:var(--p)}
+.btn-success{background:var(--ok);color:#fff}.btn-success:hover{filter:brightness(1.1)}
+.btn-danger{background:var(--err);color:#fff}.btn-danger:hover{filter:brightness(1.1)}
+.btn-warning{background:var(--warn);color:#fff}
+.btn-outline{background:transparent;color:var(--pl);border:1.5px solid var(--pl)}
+.btn-outline:hover{background:#eff6ff}
+.btn-ghost{background:transparent;color:var(--muted);border:1.5px solid var(--bdr)}
+.btn-ghost:hover{background:#f8fafc}
+.btn-sm{padding:5px 9px;font-size:12px}
+/* Cards */
+.card{background:var(--card);border-radius:10px;border:1px solid var(--bdr)}
+.card-hdr{padding:13px 17px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card-title{font-size:14px;font-weight:700;color:var(--p)}
+.card-body{padding:15px 17px}
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:18px}
+.stat{background:#fff;border-radius:10px;padding:14px;border:1px solid var(--bdr)}
+.stat-icon{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:19px;margin-bottom:10px}
+.blue{background:#dbeafe;color:#1d4ed8}.green{background:#dcfce7;color:#15803d}
+.amber{background:#fef3c7;color:#b45309}.red{background:#fee2e2;color:#b91c1c}
+.teal{background:#ccfbf1;color:#0f766e}
+.stat-val{font-size:21px;font-weight:800;color:#1a2433}
+.stat-lbl{font-size:12px;color:var(--muted);margin-top:2px}
+.stat-chg{font-size:11px;margin-top:4px}.up{color:var(--ok)}.dn{color:var(--err)}
+/* Row */
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+/* Table */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f8fafc;padding:8px 11px;text-align:right;color:var(--muted);font-size:11px;font-weight:700;border-bottom:1px solid var(--bdr)}
+/* [NEW-20] نظام الجداول العالمي — فرز + عناوين ثابتة + سحب الأعمدة + تمرير سلس (زي Excel) */
+.table-scroll{max-height:calc(100vh - 320px);min-height:200px;overflow:auto;border:1px solid var(--bdr);border-radius:8px;position:relative}
+.table-scroll.compact{max-height:340px}
+.table-scroll table{margin:0}
+.table-scroll thead th{position:sticky;top:0;z-index:3;box-shadow:0 1px 0 var(--bdr);background:#f8fafc}
+th.sortable{cursor:pointer;user-select:none;white-space:nowrap}
+th.sortable:hover{background:#eef2f7}
+th.sortable .th-inner{display:flex;align-items:center;gap:4px;justify-content:flex-end}
+th.sortable .sort-arrow{opacity:.35;font-size:9px;transition:opacity .15s}
+th.sortable.sort-asc .sort-arrow,th.sortable.sort-desc .sort-arrow{opacity:1;color:var(--pl);font-weight:900}
+th .col-resizer{position:absolute;left:0;top:0;bottom:0;width:6px;cursor:col-resize;user-select:none;z-index:4}
+th .col-resizer:hover,th .col-resizer.resizing{background:rgba(37,99,168,.35)}
+.table-toolbar{display:flex;gap:7px;align-items:center;padding:8px 4px;flex-wrap:wrap}
+.table-toolbar .row-count{font-size:11px;color:var(--muted);margin-left:auto}
+/* شريط تمرير أنيق زي تطبيقات سطح المكتب */
+.table-scroll::-webkit-scrollbar{width:10px;height:10px}
+.table-scroll::-webkit-scrollbar-track{background:#f1f5f9}
+.table-scroll::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:6px}
+.table-scroll::-webkit-scrollbar-thumb:hover{background:#94a3b8}
+td{padding:9px 11px;border-bottom:1px solid #f1f5f9;color:#1a2433;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f8fafc}
+/* Badges */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:11px;font-size:11px;font-weight:700}
+.b-active{background:#dcfce7;color:#15803d}.b-suspended{background:#fee2e2;color:#b91c1c}
+.b-graduated{background:#dbeafe;color:#1d4ed8}.b-withdrawn{background:#f3f4f6;color:#6b7280}
+.b-paid{background:#dcfce7;color:#15803d}.b-partial{background:#fef3c7;color:#b45309}
+.b-overdue{background:#fee2e2;color:#b91c1c}.b-dept{background:#ede9fe;color:#6d28d9}
+.b-income{background:#dcfce7;color:#15803d}.b-expense{background:#fee2e2;color:#b91c1c}
+/* Forms */
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:11px}
+.fg label{font-size:12px;font-weight:700;color:var(--muted)}
+.fg input,.fg select,.fg textarea{padding:8px 11px;border:1.5px solid var(--bdr);border-radius:7px;font-size:13px;outline:none;background:#fff;font-family:inherit}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--pl)}
+.fg-grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.fg-full{grid-column:span 2}
+/* Search bar */
+.search-bar{display:flex;gap:7px;padding:11px 16px;background:#f8fafc;border-bottom:1px solid var(--bdr);flex-wrap:wrap;align-items:center}
+.search-input{flex:1;min-width:180px;padding:7px 11px;border:1.5px solid var(--bdr);border-radius:7px;font-size:13px;outline:none}
+.search-input:focus{border-color:var(--pl)}
+.filter-sel{padding:7px 9px;border:1.5px solid var(--bdr);border-radius:7px;font-size:13px;background:#fff}
+/* Tabs */
+.tab-nav{display:flex;background:#fff;border-bottom:1px solid var(--bdr);flex-shrink:0}
+.tab-btn{padding:10px 16px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent}
+.tab-btn.active{color:var(--pl);border-bottom-color:var(--pl)}
+.tab-pane{display:none;padding:16px}.tab-pane.active{display:block}
+/* Alerts */
+.alert{display:flex;gap:9px;padding:9px 12px;border-radius:8px;margin-bottom:8px}
+.alert-warn{background:#fffbeb;border:1px solid #fde68a}
+.alert-danger{background:#fef2f2;border:1px solid #fecaca}
+.alert-info{background:#eff6ff;border:1px solid #bfdbfe}
+.alert-success{background:#f0fdf4;border:1px solid #bbf7d0}
+.alert-txt{font-size:12px;font-weight:700}.alert-sub{font-size:11px;color:var(--muted)}
+/* Receipt */
+.receipt{border:1px solid var(--bdr);border-radius:8px;padding:14px;background:#fafafa}
+.receipt-hdr{text-align:center;padding-bottom:9px;border-bottom:1px dashed var(--bdr);margin-bottom:9px}
+.receipt-row{display:flex;justify-content:space-between;padding:2px 0;font-size:12px}
+.receipt-total{display:flex;justify-content:space-between;padding:7px 0 0;font-size:14px;font-weight:700;border-top:1px solid var(--bdr);margin-top:5px}
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;padding:12px}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:12px;width:100%;max-width:600px;max-height:92vh;overflow-y:auto}
+.modal-lg{max-width:720px}
+.modal-hdr{padding:14px 18px;border-bottom:1px solid var(--bdr);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#fff;z-index:1}
+.modal-body{padding:18px}
+.modal-foot{padding:12px 18px;border-top:1px solid var(--bdr);display:flex;gap:9px;justify-content:flex-end;position:sticky;bottom:0;background:#fff}
+.close-btn{background:none;border:none;font-size:20px;cursor:pointer;color:#9ca3af;line-height:1}
+.close-btn:hover{color:#374151}
+/* Toast */
+#toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1a3c5e;color:#fff;padding:10px 22px;border-radius:8px;font-size:13px;z-index:9999;display:none;box-shadow:0 4px 20px rgba(0,0,0,.3);max-width:90vw;text-align:center}
+#toast.ok{background:#15803d}
+#toast.er{background:#b91c1c}
+/* Pagination */
+.pagination{display:flex;gap:5px;margin-top:12px;justify-content:center;align-items:center}
+.page-btn{padding:5px 11px;border-radius:6px;font-size:12px;border:1.5px solid var(--bdr);background:#fff;cursor:pointer}
+.page-btn:hover{background:#f1f5f9}
+.page-btn.active{background:var(--pl);color:#fff;border-color:var(--pl)}
+.page-info{font-size:12px;color:var(--muted);padding:0 8px}
+/* Bars */
+.bars{display:flex;align-items:flex-end;gap:5px;height:100px}
+.bar{flex:1;border-radius:4px 4px 0 0;cursor:pointer;transition:opacity .15s;min-width:10px}
+.bar:hover{opacity:.8}
+.bar-labels{display:flex;gap:5px;margin-top:5px}
+.bar-lbl{flex:1;text-align:center;font-size:10px;color:var(--muted)}
+/* Permissions table */
+.perm-table{width:100%;border-collapse:collapse;font-size:12px}
+.perm-table th,.perm-table td{padding:7px 9px;text-align:center;border:1px solid var(--bdr)}
+.perm-table th{background:#f8fafc;font-weight:700}
+.perm-table td:first-child{text-align:right;font-weight:700}
+.pcheck{color:var(--ok);font-size:15px}.pno{color:#d1d5db;font-size:15px}
+/* Print */
+@media print{
+  .sidebar,.topbar,.modal-overlay,#toast{display:none!important}
+  .content,.app,.main{display:block;overflow:visible!important;height:auto!important}
+  #print-area{display:block!important}
+}
+#print-area{display:none}
+/* Misc */
+.hidden{display:none!important}
+.text-right{text-align:right}
+.fw7{font-weight:700}
+.text-ok{color:var(--ok)}.text-err{color:var(--err)}.text-warn{color:var(--warn)}
+/* Must-change PW banner */
+.pw-banner{background:#fffbeb;border:1px solid #fde68a;padding:9px 16px;display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer}
+.pw-banner:hover{background:#fef3c7}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+<!-- PRINT AREA -->
+<div id="print-area"></div>
+
+<!-- STUDENT MODAL -->
+<div class="modal-overlay" id="modal-student">
+  <div class="modal modal-lg">
+    <div class="modal-hdr">
+      <span style="font-weight:700;font-size:15px" id="student-modal-title">تسجيل طالب جديد</span>
+      <button class="close-btn" onclick="closeModal('modal-student')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="s-id">
+      <div class="fg-grid2">
+        <div class="fg"><label>الاسم الأول *</label><input id="s-fn" maxlength="40" placeholder="الاسم الأول"></div>
+        <div class="fg"><label>اسم الأب *</label><input id="s-sn" maxlength="40" placeholder="اسم الأب"></div>
+        <div class="fg"><label>اسم الجد *</label><input id="s-tn" maxlength="40" placeholder="اسم الجد"></div>
+        <div class="fg"><label>اسم العائلة *</label><input id="s-fam" maxlength="40" placeholder="اسم العائلة"></div>
+        <div class="fg"><label>الرقم القومي (14 رقم)</label><input id="s-nid" placeholder="14 رقم" maxlength="14" oninput="this.value=this.value.replace(/\D/g,'')"></div>
+        <div class="fg"><label>تاريخ الميلاد</label><input type="date" id="s-dob"></div>
+        <div class="fg"><label>رقم الهاتف *</label><input id="s-ph" placeholder="01XXXXXXXXX" maxlength="15"></div>
+        <div class="fg"><label>هاتف ولي الأمر</label><input id="s-gph" placeholder="01XXXXXXXXX" maxlength="15"></div>
+        <div class="fg fg-full"><label>العنوان</label><input id="s-addr" maxlength="250" placeholder="العنوان الكامل"></div>
+        <div class="fg">
+          <label>القسم *</label>
+          <select id="s-dept" onchange="loadBatches()"><option value="">— اختر —</option></select>
+        </div>
+        <div class="fg">
+          <label>الدفعة</label>
+          <select id="s-batch"><option value="">— اختر —</option></select>
+        </div>
+        <div class="fg">
+          <label>الحالة</label>
+          <select id="s-status">
+            <option value="active">مقيد</option>
+            <option value="suspended">موقوف</option>
+            <option value="withdrawn">منسحب</option>
+            <option value="graduated">متخرج</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>إجمالي الرسوم (ج)</label>
+          <input type="number" id="s-fees" placeholder="تلقائي من القسم" min="0">
+        </div>
+        <div class="fg fg-full"><label>ملاحظات</label><textarea id="s-notes" rows="2" maxlength="500" style="resize:vertical"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-student')">إلغاء</button>
+      <button class="btn btn-success" onclick="saveStudent()"><i class="ti ti-check"></i> <span id="s-save-lbl">تسجيل الطالب</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="modal-overlay" id="modal-payment">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-hdr">
+      <span style="font-weight:700;font-size:15px">تسجيل دفعة</span>
+      <button class="close-btn" onclick="closeModal('modal-payment')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="fg"><label>كود الطالب</label>
+        <input id="pay-code" placeholder="ACE-XXXX-XXXX-XX" oninput="lookupStudent(this.value)">
+        <span id="pay-info" style="font-size:12px;color:var(--muted);margin-top:3px"></span>
+      </div>
+      <div class="fg-grid2">
+        <div class="fg"><label>المبلغ (ج) *</label><input type="number" id="pay-amount" placeholder="0" min="0.01" step="0.01"></div>
+        <div class="fg"><label>نوع الدفع</label>
+          <select id="pay-type">
+            <option value="monthly">قسط شهري</option>
+            <option value="first">دفعة أولى</option>
+            <option value="registration">رسوم تسجيل</option>
+            <option value="other">أخرى</option>
+          </select>
+        </div>
+        <div class="fg"><label>طريقة الدفع</label>
+          <select id="pay-method">
+            <option value="cash">نقدي</option>
+            <option value="transfer">تحويل بنكي</option>
+            <option value="card">بطاقة</option>
+          </select>
+        </div>
+        <div class="fg"><label>ملاحظات</label><input id="pay-notes" placeholder="اختياري" maxlength="200"></div>
+      </div>
+      <div id="receipt-preview" class="receipt hidden"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-payment')">إلغاء</button>
+      <button class="btn btn-primary" onclick="savePayment(false)">حفظ فقط</button>
+      <button class="btn btn-success" onclick="savePayment(true)"><i class="ti ti-printer"></i> حفظ وطباعة</button>
+    </div>
+  </div>
+</div>
+
+<!-- STUDENT DETAIL MODAL -->
+<div class="modal-overlay" id="modal-detail">
+  <div class="modal modal-lg">
+    <div class="modal-hdr">
+      <div>
+        <div style="font-weight:700;font-size:15px" id="detail-name">بيانات الطالب</div>
+        <div style="font-size:12px;color:var(--pl)" id="detail-code"></div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-outline btn-sm" onclick="printStudentIdCard(_currentStudentDetail.id)"><i class="ti ti-id"></i> طباعة البطاقة</button>
+        <button class="btn btn-outline btn-sm" onclick="openEditStudent()"><i class="ti ti-edit"></i> تعديل</button>
+        <button class="close-btn" onclick="closeModal('modal-detail')">✕</button>
+      </div>
+    </div>
+    <div class="modal-body" id="detail-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-detail')">إغلاق</button>
+      <button class="btn btn-primary" onclick="openPayModal()"><i class="ti ti-cash"></i> تسجيل دفعة</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD DEPT MODAL -->
+<div class="modal-overlay" id="modal-dept">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-hdr">
+      <span style="font-weight:700;font-size:15px" id="dept-modal-title">قسم جديد</span>
+      <button class="close-btn" onclick="closeModal('modal-dept')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="d-id">
+      <div class="fg"><label>اسم القسم *</label><input id="d-name" maxlength="100" placeholder="اسم القسم"></div>
+      <div class="fg-grid2">
+        <div class="fg"><label>الرسوم السنوية (ج)</label><input type="number" id="d-fee" min="0" placeholder="0"></div>
+        <div class="fg"><label>الدفعة الأولى (ج)</label><input type="number" id="d-first" min="0" placeholder="0"></div>
+        <div class="fg"><label>عدد الأقساط</label><input type="number" id="d-inst" min="1" max="24" placeholder="10"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-dept')">إلغاء</button>
+      <button class="btn btn-success" onclick="saveDept()"><i class="ti ti-check"></i> حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD USER MODAL -->
+<div class="modal-overlay" id="modal-user">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-hdr">
+      <span style="font-weight:700;font-size:15px" id="user-modal-title">مستخدم جديد</span>
+      <button class="close-btn" onclick="closeModal('modal-user')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="u-id">
+      <div class="fg"><label>اسم المستخدم *</label><input id="u-username" maxlength="80" placeholder="بالأحرف الإنجليزية فقط" autocomplete="off"></div>
+      <div class="fg"><label>الاسم الكامل</label><input id="u-name" maxlength="120" placeholder="الاسم بالعربي"></div>
+      <div class="fg-grid2">
+        <div class="fg"><label>الدور</label>
+          <select id="u-role">
+            <option value="reception">استقبال</option>
+            <option value="students">شؤون الطلاب</option>
+            <option value="accounts">الحسابات</option>
+            <option value="admin">مدير</option>
+          </select>
+        </div>
+        <div class="fg"><label>كلمة المرور</label><input type="password" id="u-pw" placeholder="6 أحرف على الأقل" autocomplete="new-password"></div>
+      </div>
+      <div class="fg" id="u-active-row" style="display:none">
+        <label><input type="checkbox" id="u-active" checked> المستخدم نشط</label>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-user')">إلغاء</button>
+      <button class="btn btn-success" onclick="saveUser()"><i class="ti ti-check"></i> حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE PASSWORD MODAL -->
+<div class="modal-overlay" id="modal-cpw">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-hdr">
+      <span style="font-weight:700;font-size:15px">تغيير كلمة المرور</span>
+      <button class="close-btn" onclick="closeModal('modal-cpw')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="fg"><label>كلمة المرور الحالية</label><input type="password" id="cpw-old" autocomplete="current-password"></div>
+      <div class="fg"><label>كلمة المرور الجديدة</label><input type="password" id="cpw-new" autocomplete="new-password"></div>
+      <div class="fg"><label>تأكيد كلمة المرور</label><input type="password" id="cpw-cf"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-cpw')">إلغاء</button>
+      <button class="btn btn-primary" onclick="doChangePw()">حفظ</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="s-logo">
+      <img id="sidebar-custom-logo" src="/api/settings/logo" alt="شعار الأكاديمية"
+           style="max-width:100%;max-height:44px;display:none;margin-bottom:4px"
+           onload="this.style.display='block';document.getElementById('sidebar-default-logo').style.display='none';"
+           onerror="this.style.display='none';">
+      <h2 id="sidebar-default-logo">🎓 GTech ERP</h2>
+      <p id="s-client-name">نظام إدارة الأكاديمية</p>
+    </div>
+    <div class="s-nav">
+      <div class="s-sec">الرئيسية</div>
+      <div class="s-item active" onclick="showPage('dashboard',this)"><i class="ti ti-layout-dashboard"></i> لوحة التحكم</div>
+      <div class="s-item" onclick="openGlobalSearch()"><i class="ti ti-search"></i> بحث شامل</div>
+      <div class="s-item" onclick="showPage('ai',this)"><i class="ti ti-sparkles"></i> المساعد الذكي ✨</div>
+      <div class="s-sec">الطلاب</div>
+      <div class="s-item" onclick="showPage('students',this)"><i class="ti ti-users"></i> إدارة الطلاب <span class="s-badge" id="badge-students">0</span></div>
+      <div class="s-item" onclick="openStudentModal()"><i class="ti ti-user-plus"></i> تسجيل طالب جديد</div>
+      <div class="s-sec">المدرسون</div>
+      <div class="s-item" onclick="showPage('teachers',this)"><i class="ti ti-chalkboard"></i> إدارة المدرسين</div>
+      <div class="s-item" onclick="showPage('attendance',this)"><i class="ti ti-calendar-check"></i> الحضور والغياب</div>
+      <div class="s-item" onclick="showPage('scan',this)"><i class="ti ti-scan"></i> المسح السريع (باركود) ✨</div>
+      <div class="s-sec">المالية</div>
+      <div class="s-item" onclick="showPage('fees',this)"><i class="ti ti-coin"></i> المصروفات والأقساط <span class="s-badge" id="badge-overdue">0</span></div>
+      <div class="s-item" onclick="openPayModal()"><i class="ti ti-receipt"></i> تسجيل دفعة</div>
+      <div class="s-item" onclick="showPage('finance',this)"><i class="ti ti-chart-line"></i> الإيرادات والمصروفات</div>
+      <div class="s-sec">الإدارة</div>
+      <div class="s-item" onclick="showPage('departments',this)"><i class="ti ti-building"></i> الأقسام والدفعات</div>
+      <div class="s-item" onclick="showPage('reports',this)"><i class="ti ti-file-analytics"></i> التقارير</div>
+      <div class="s-item" onclick="showPage('notifications',this)"><i class="ti ti-bell"></i> الإشعارات</div>
+      <div class="s-item" onclick="showPage('users',this)"><i class="ti ti-shield-lock"></i> المستخدمون</div>
+      <div class="s-item" onclick="showPage('backup',this)"><i class="ti ti-database"></i> النسخ الاحتياطي</div>
+      <div class="s-item" onclick="showPage('actlog',this)"><i class="ti ti-history"></i> سجل النشاط</div>
+    </div>
+    <div class="s-foot">
+      <span id="offline-pending-badge" style="display:none;background:#f59e0b;color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;margin:0 14px 8px;text-align:center" title="عمليات في انتظار المزامنة"></span>
+      <div class="s-user">
+        <div class="s-avatar" id="s-avatar">م</div>
+        <div style="flex:1;min-width:0">
+          <div style="color:#fff;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="s-uname">مدير النظام</div>
+          <div style="color:var(--st);font-size:10px" id="s-urole">admin</div>
+        </div>
+        <div style="display:flex;gap:5px">
+          <span style="color:var(--st);cursor:pointer" title="تغيير كلمة المرور" onclick="openModal('modal-cpw')"><i class="ti ti-key"></i></span>
+          <a href="/logout" style="color:var(--st)" title="خروج"><i class="ti ti-logout"></i></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <!-- PW BANNER -->
+    <div id="pw-banner" class="pw-banner hidden" onclick="openModal('modal-cpw')">
+      ⚠️ يجب تغيير كلمة المرور الافتراضية — اضغط هنا للتغيير الآن
+    </div>
+    <!-- [NEW-21] OFFLINE BANNER -->
+    <div id="offline-banner" style="display:none;background:#7c2d12;color:#fff;padding:9px 16px;align-items:center;gap:9px;font-size:13px;justify-content:center">
+      <span>🔴 غير متصل بالإنترنت — العمليات هتتحفظ محلياً وتترفع تلقائياً لما الاتصال يرجع</span>
+    </div>
+    <div class="topbar">
+      <div>
+        <div class="topbar-crumb" id="topbar-crumb">الرئيسية</div>
+        <div class="topbar-title" id="topbar-title">لوحة التحكم</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost btn-sm" onclick="doBackup()"><i class="ti ti-database-export"></i> نسخة احتياطية</button>
+        <button class="btn btn-ghost btn-sm" onclick="exportCSV()"><i class="ti ti-file-spreadsheet"></i> Excel</button>
+        <button class="btn btn-primary btn-sm" onclick="openStudentModal()"><i class="ti ti-plus"></i> طالب جديد</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="content">
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-icon blue"><i class="ti ti-users"></i></div><div class="stat-val" id="d-students">—</div><div class="stat-lbl">إجمالي الطلاب</div><div class="stat-chg" id="d-new"></div></div>
+        <div class="stat"><div class="stat-icon green"><i class="ti ti-cash"></i></div><div class="stat-val" id="d-income">—</div><div class="stat-lbl">إيرادات الشهر</div><div class="stat-chg" id="d-income-chg"></div></div>
+        <div class="stat"><div class="stat-icon amber"><i class="ti ti-clock-exclamation"></i></div><div class="stat-val" id="d-overdue">—</div><div class="stat-lbl">متأخرون في السداد</div></div>
+        <div class="stat"><div class="stat-icon teal"><i class="ti ti-scale"></i></div><div class="stat-val" id="d-net">—</div><div class="stat-lbl">صافي الشهر</div></div>
+      </div>
+      <div class="row2">
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">الطلاب النشطون لكل قسم</span></div>
+          <div class="card-body">
+            <div class="bars" id="dept-bars"></div>
+            <div class="bar-labels" id="dept-labels"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">التنبيهات</span></div>
+          <div class="card-body" id="dash-alerts" style="padding-top:6px"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">أعلى 5 متأخرين في السداد</span>
+          <button class="btn btn-outline btn-sm" onclick="showPage('fees',document.querySelectorAll('.s-item')[5])">عرض الكل</button></div>
+        <table><thead><tr><th>الكود</th><th>الاسم</th><th>القسم</th><th>المتبقي</th><th>إجراء</th></tr></thead>
+        <tbody id="dash-overdue"></tbody></table>
+      </div>
+    </div>
+
+    <!-- STUDENTS -->
+    <div id="page-students" class="content hidden" style="padding:0">
+      <div class="search-bar">
+        <i class="ti ti-search" style="color:var(--muted)"></i>
+        <input class="search-input" id="search-q" placeholder="الاسم / الرقم القومي / الهاتف / الكود..." oninput="debounceSearch()">
+        <select class="filter-sel" id="filter-dept" onchange="loadStudents()"><option value="">كل الأقسام</option></select>
+        <select class="filter-sel" id="filter-status" onchange="loadStudents()">
+          <option value="">كل الحالات</option>
+          <option value="active">مقيد</option><option value="suspended">موقوف</option>
+          <option value="withdrawn">منسحب</option><option value="graduated">متخرج</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="openStudentModal()"><i class="ti ti-plus"></i> تسجيل</button>
+        <button class="btn btn-ghost btn-sm" onclick="exportCSV()"><i class="ti ti-file-spreadsheet"></i> تصدير</button>
+      </div>
+      <div class="table-scroll">
+        <table id="students-table">
+          <thead><tr><th>الكود</th><th>الاسم الرباعي</th><th>القسم</th><th>الدفعة</th><th>الهاتف</th><th>المتبقي</th><th>حالة السداد</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+          <tbody id="students-body"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="students-pagination"></div>
+    </div>
+
+    <!-- FEES -->
+    <div id="page-fees" class="content hidden" style="padding:0">
+      <div class="tab-nav">
+        <div class="tab-btn active" onclick="switchTab(this,'fees-1')">مصروفات الأقسام</div>
+        <div class="tab-btn" onclick="switchTab(this,'fees-2');loadOverdue()">إصدار إيصال سريع</div>
+        <div class="tab-btn" onclick="switchTab(this,'fees-3');loadOverdue()">المتأخرون</div>
+      </div>
+      <div id="fees-1" class="tab-pane active">
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">مصروفات الأقسام</span></div>
+          <table><thead><tr><th>القسم</th><th>الطلاب النشطون</th><th>الرسوم السنوية</th><th>الدفعة الأولى</th><th>عدد الأقساط</th><th>قيمة القسط</th></tr></thead>
+          <tbody id="fees-body"></tbody></table>
+        </div>
+      </div>
+      <div id="fees-2" class="tab-pane">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="card">
+            <div class="card-hdr"><span class="card-title">دفعة سريعة</span></div>
+            <div class="card-body">
+              <div class="fg"><label>كود الطالب</label><input id="q-code" placeholder="ACE-XXXX-XXXX-XX" oninput="previewQuick()"><span id="q-info" style="font-size:12px;color:var(--muted);margin-top:3px"></span></div>
+              <div class="fg"><label>المبلغ (ج)</label><input type="number" id="q-amount" min="0.01" step="0.01" placeholder="0" oninput="previewQuick()"></div>
+              <div class="fg"><label>طريقة الدفع</label><select id="q-method"><option value="cash">نقدي</option><option value="transfer">تحويل</option><option value="card">بطاقة</option></select></div>
+              <button class="btn btn-success" style="width:100%" onclick="quickPayment()"><i class="ti ti-printer"></i> إصدار وطباعة</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-hdr"><span class="card-title">معاينة الإيصال</span></div>
+            <div class="card-body"><div id="q-preview" class="receipt"><div style="text-align:center;color:var(--muted);padding:20px;font-size:13px">أدخل كود الطالب للمعاينة</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div id="fees-3" class="tab-pane">
+        <div class="card">
+          <div class="card-hdr">
+            <span class="card-title">الطلاب المتأخرون في السداد</span>
+            <span id="overdue-count" style="font-size:12px;color:var(--muted)"></span>
+          </div>
+          <div class="table-scroll">
+          <table id="overdue-table"><thead><tr><th>الطالب</th><th>القسم</th><th>الهاتف</th><th>الرسوم</th><th>المدفوع</th><th>المتبقي</th><th>إجراء</th></tr></thead>
+          <tbody id="overdue-body"></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FINANCE -->
+    <div id="page-finance" class="content hidden">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
+        <div class="stat"><div class="stat-icon green"><i class="ti ti-trending-up"></i></div><div class="stat-val" id="f-income">—</div><div class="stat-lbl">الإيرادات</div></div>
+        <div class="stat"><div class="stat-icon red"><i class="ti ti-trending-down"></i></div><div class="stat-val" id="f-expense">—</div><div class="stat-lbl">المصروفات</div></div>
+        <div class="stat"><div class="stat-icon blue"><i class="ti ti-scale"></i></div><div class="stat-val" id="f-net">—</div><div class="stat-lbl">الصافي</div></div>
+      </div>
+      <div class="row2">
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">تسجيل حركة مالية</span></div>
+          <div class="card-body">
+            <div class="fg"><label>الفترة</label><select id="txn-period" onchange="loadFinance()"><option value="month">الشهر الحالي</option><option value="day">اليوم</option><option value="year">السنة</option></select></div>
+            <div class="fg"><label>النوع</label><select id="txn-type"><option value="income">إيراد</option><option value="expense">مصروف</option></select></div>
+            <div class="fg"><label>التصنيف</label>
+              <select id="txn-cat">
+                <option>مصاريف دراسية</option><option>رسوم تسجيل</option><option>رواتب</option>
+                <option>إيجار</option><option>مستلزمات</option><option>صيانة</option>
+                <option>مرافق</option><option>تسويق</option><option>نثريات</option><option>أخرى</option>
+              </select>
+            </div>
+            <div class="fg"><label>المبلغ (ج) *</label><input type="number" id="txn-amount" placeholder="0" min="0.01" step="0.01"></div>
+            <div class="fg"><label>البيان</label><input id="txn-desc" placeholder="وصف العملية" maxlength="200"></div>
+            <button class="btn btn-primary" style="width:100%" onclick="saveTxn()"><i class="ti ti-check"></i> تسجيل</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">آخر الحركات</span><button class="btn btn-ghost btn-sm" onclick="exportTableToExcel('txn-table','الخزينة.csv')"><i class="ti ti-file-spreadsheet"></i> تصدير</button></div>
+          <div class="table-scroll compact">
+            <table id="txn-table"><thead><tr><th>التاريخ</th><th>البيان</th><th>النوع</th><th>المبلغ</th></tr></thead>
+            <tbody id="txn-body"></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEPARTMENTS -->
+    <div id="page-departments" class="content hidden">
+      <div class="row2">
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">الأقسام</span><button class="btn btn-primary btn-sm" onclick="openDeptModal()"><i class="ti ti-plus"></i> قسم جديد</button></div>
+          <table><thead><tr><th>القسم</th><th>الطلاب</th><th>الرسوم</th><th>الأقساط</th><th>إجراءات</th></tr></thead>
+          <tbody id="depts-body"></tbody></table>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">إضافة دفعة</span></div>
+          <div class="card-body">
+            <div class="fg"><label>القسم</label><select id="b-dept"><option value="">— اختر —</option></select></div>
+            <div class="fg"><label>اسم الدفعة *</label><input id="b-name" placeholder="مثال: الدفعة الأولى 2024" maxlength="80"></div>
+            <div class="fg"><label>السنة</label><input type="number" id="b-year" placeholder="2024" min="2020" max="2035"></div>
+            <button class="btn btn-primary" onclick="addBatch()"><i class="ti ti-plus"></i> إضافة الدفعة</button>
+          </div>
+          <div class="card-hdr" style="margin-top:0"><span class="card-title" style="font-size:12px">الدفعات</span></div>
+          <table><thead><tr><th>الاسم</th><th>القسم</th><th>السنة</th><th>الطلاب</th><th>البطاقات</th></tr></thead>
+          <tbody id="batches-body"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div id="page-reports" class="content hidden">
+      <div id="report-summary" style="margin-bottom:18px"></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+        <div class="card" style="cursor:pointer" onclick="exportCSV()">
+          <div class="card-body" style="text-align:center;padding:22px">
+            <i class="ti ti-users" style="font-size:32px;color:#3b82f6;display:block;margin-bottom:8px"></i>
+            <div style="font-weight:700;font-size:14px">تصدير بيانات الطلاب</div>
+            <div style="font-size:11px;color:var(--muted);margin:5px 0 12px">CSV — كل بيانات الطلاب</div>
+            <button class="btn btn-outline btn-sm"><i class="ti ti-file-spreadsheet"></i> تحميل CSV</button>
+          </div>
+        </div>
+        <div class="card" style="cursor:pointer" onclick="doBackup()">
+          <div class="card-body" style="text-align:center;padding:22px">
+            <i class="ti ti-database-export" style="font-size:32px;color:#8b5cf6;display:block;margin-bottom:8px"></i>
+            <div style="font-weight:700;font-size:14px">نسخة احتياطية كاملة</div>
+            <div style="font-size:11px;color:var(--muted);margin:5px 0 12px">JSON — الطلاب والمدفوعات والخزينة</div>
+            <button class="btn btn-outline btn-sm"><i class="ti ti-download"></i> تحميل</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body" style="text-align:center;padding:22px">
+            <i class="ti ti-clock-exclamation" style="font-size:32px;color:#ef4444;display:block;margin-bottom:8px"></i>
+            <div style="font-weight:700;font-size:14px">تقرير المتأخرين</div>
+            <div style="font-size:11px;color:var(--muted);margin:5px 0 12px">قائمة بكل المتأخرين</div>
+            <button class="btn btn-outline btn-sm" onclick="showPage('fees',null);setTimeout(()=>document.querySelector('.tab-btn:nth-child(3)').click(),100)"><i class="ti ti-eye"></i> عرض</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div id="page-notifications" class="content hidden">
+      <div class="row2">
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">إرسال رسالة جماعية</span></div>
+          <div class="card-body">
+            <div class="fg-grid2">
+              <div class="fg"><label>قناة الإرسال</label><select id="notif-channel"><option value="whatsapp">WhatsApp</option><option value="sms">SMS</option><option value="both">الاثنتان</option></select></div>
+              <div class="fg"><label>المستهدفون</label><select id="notif-target"><option value="all">كل الطلاب النشطين</option><option value="overdue">المتأخرون فقط</option></select></div>
+              <div class="fg"><label>عنوان الرسالة</label><input id="notif-title" placeholder="تذكير أقساط" maxlength="150"></div>
+              <div class="fg"></div>
+              <div class="fg fg-full"><label>نص الرسالة *</label><textarea id="notif-msg" rows="3" maxlength="500" style="padding:8px 11px;border:1.5px solid var(--bdr);border-radius:7px;font-size:13px;resize:vertical;width:100%">تذكير: القسط الشهري مستحق السداد. يرجى السداد في أقرب وقت. شكراً لكم.</textarea></div>
+            </div>
+            <div class="alert alert-info" style="margin-bottom:10px">
+              <span>ℹ️</span><span style="font-size:12px">سيُسجَّل الإرسال في السجل. التكامل الفعلي مع WhatsApp/SMS يتطلب تهيئة API خارجي.</span>
+            </div>
+            <button class="btn btn-success" onclick="sendNotification()"><i class="ti ti-send"></i> إرسال وتسجيل</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">سجل الرسائل</span></div>
+          <table><thead><tr><th>التاريخ</th><th>القناة</th><th>المستهدفون</th><th>العدد</th><th>الحالة</th></tr></thead>
+          <tbody id="notif-body"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div id="page-users" class="content hidden">
+      <div class="row2">
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">المستخدمون</span>
+            <div style="display:flex;gap:6px;align-items:center">
+              <span id="user-limit" style="font-size:11px;color:var(--muted)"></span>
+              <button class="btn btn-primary btn-sm" onclick="openUserModal()"><i class="ti ti-plus"></i> مستخدم جديد</button>
+            </div>
+          </div>
+          <div class="table-scroll compact">
+          <table id="users-table"><thead><tr><th>اسم الدخول</th><th>الاسم</th><th>الدور</th><th>آخر دخول</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+          <tbody id="users-body"></tbody></table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">مصفوفة الصلاحيات</span></div>
+          <div style="overflow:auto">
+            <table class="perm-table">
+              <thead><tr><th>الوحدة</th><th>مدير</th><th>شؤون طلاب</th><th>حسابات</th><th>استقبال</th></tr></thead>
+              <tbody>
+                <tr><td>إضافة/تعديل طلاب</td><td><i class="ti ti-check pcheck"></i></td><td><i class="ti ti-check pcheck"></i></td><td><i class="ti ti-x pno"></i></td><td><i class="ti ti-x pno"></i></td></tr>
+                <tr><td>عرض الطلاب</td><td><i class="ti ti-check pcheck"></i></td><td><i class="ti ti-check pcheck"></i></td><td><i class="ti ti-check pcheck"></i></td><td><i class="ti ti-check pcheck"></i></td></tr>
+                <tr><td>المدفوعات والإيصالات</td><td><i class="ti ti-check pcheck"></i></td><td><i class="ti ti-x pno"></i></td><td><i class="ti ti-check pcheck"></i></td><td><i class="ti ti-x pno"></i></td></tr>
+                <tr><td>الخزينة</td><td><i class="ti ti-check pcheck"></i></td><td><i class="ti ti-x pno"></i></td><td><i class="ti ti-check pcheck"></i></td><td><i class="ti ti-x pno"></i></td></tr>
+                <tr><td>التقارير والتصدير</td><td><i class="ti ti-check pcheck"></i></td><td><i class="ti ti-check pcheck"></i></td><td><i class="ti ti-check pcheck"></i></td><td><i class="ti ti-x pno"></i></td></tr>
+                <tr><td>الإشعارات</td><td><i class="ti ti-check pcheck"></i></td><td><i class="ti ti-check pcheck"></i></td><td><i class="ti ti-x pno"></i></td><td><i class="ti ti-x pno"></i></td></tr>
+                <tr><td>إدارة الأقسام</td><td><i class="ti ti-check pcheck"></i></td><td><i class="ti ti-x pno"></i></td><td><i class="ti ti-x pno"></i></td><td><i class="ti ti-x pno"></i></td></tr>
+                <tr><td>إدارة المستخدمين</td><td><i class="ti ti-check pcheck"></i></td><td><i class="ti ti-x pno"></i></td><td><i class="ti ti-x pno"></i></td><td><i class="ti ti-x pno"></i></td></tr>
+                <tr><td>النسخة الاحتياطية</td><td><i class="ti ti-check pcheck"></i></td><td><i class="ti ti-x pno"></i></td><td><i class="ti ti-x pno"></i></td><td><i class="ti ti-x pno"></i></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVITY LOG -->
+    <div id="page-actlog" class="content hidden">
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">سجل نشاط المستخدمين</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm" onclick="exportTableToExcel('actlog-table','سجل_النشاط.csv')"><i class="ti ti-file-spreadsheet"></i> تصدير</button>
+            <button class="btn btn-ghost btn-sm" onclick="loadActivityLog()"><i class="ti ti-refresh"></i> تحديث</button>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table id="actlog-table"><thead><tr><th>المستخدم</th><th>الإجراء</th><th>الكيان</th><th>التفاصيل</th><th>IP</th><th>الوقت</th></tr></thead>
+          <tbody id="actlog-body"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEACHERS -->
+    <div id="page-teachers" class="content hidden" style="padding:0">
+      <div class="search-bar">
+        <i class="ti ti-search" style="color:var(--muted)"></i>
+        <input class="search-input" id="teacher-search-q" placeholder="الاسم / الهاتف / الكود..." oninput="debounceTeacherSearch()">
+        <select class="filter-sel" id="teacher-filter-status" onchange="loadTeachers()">
+          <option value="">كل الحالات</option>
+          <option value="active">نشط</option><option value="suspended">موقوف</option><option value="left">تركَ العمل</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="openTeacherModal()"><i class="ti ti-plus"></i> مدرس جديد</button>
+        <button class="btn btn-ghost btn-sm" onclick="window.location.href='/api/teachers/export_csv'"><i class="ti ti-file-spreadsheet"></i> تصدير</button>
+      </div>
+      <div style="overflow-x:auto">
+        <div class="table-scroll">
+        <table id="teachers-table">
+          <thead><tr><th>الكود</th><th>الاسم</th><th>التخصص</th><th>الأقسام</th><th>الهاتف</th><th>نوع الراتب</th><th>القيمة</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+          <tbody id="teachers-body"></tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ATTENDANCE -->
+    <div id="page-attendance" class="content hidden" style="padding:0">
+      <div class="tab-nav">
+        <div class="tab-btn active" onclick="switchTab(this,'att-1')">تسجيل حضور اليوم</div>
+        <div class="tab-btn" onclick="switchTab(this,'att-2');loadAttendanceSessions()">سجل الجلسات</div>
+        <div class="tab-btn" onclick="switchTab(this,'att-3')">حضور طالب معيَّن</div>
+      </div>
+      <div id="att-1" class="tab-pane active">
+        <div class="card">
+          <div class="card-hdr">
+            <span class="card-title">اختر الدفعة لتسجيل حضور اليوم</span>
+            <select class="filter-sel" id="att-batch-select" onchange="loadTodayAttendance()" style="min-width:200px">
+              <option value="">— اختر الدفعة —</option>
+            </select>
+          </div>
+          <div class="card-body" id="att-today-body">
+            <div style="text-align:center;color:var(--muted);padding:30px">اختر دفعة لعرض طلابها</div>
+          </div>
+        </div>
+      </div>
+      <div id="att-2" class="tab-pane">
+        <div class="card">
+          <div class="card-hdr">
+            <span class="card-title">سجل جلسات الحضور</span>
+            <select class="filter-sel" id="att-hist-batch" onchange="loadAttendanceSessions()">
+              <option value="">كل الدفعات</option>
+            </select>
+          </div>
+          <table><thead><tr><th>التاريخ</th><th>الدفعة</th><th>المدرس</th><th>الموضوع</th><th>حاضر</th><th>غائب</th><th>متأخر</th></tr></thead>
+          <tbody id="att-sessions-body"></tbody></table>
+        </div>
+      </div>
+      <div id="att-3" class="tab-pane">
+        <div class="card">
+          <div class="card-body">
+            <div class="fg"><label>كود الطالب</label><input id="att-student-code" placeholder="ACE-XXXX-XXXX-XX" oninput="lookupStudentAttendance(this.value)"></div>
+            <div id="att-student-result"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK SCAN — BARCODE ATTENDANCE -->
+    <div id="page-scan" class="content hidden">
+      <div style="max-width:640px;margin:0 auto">
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-hdr">
+            <span class="card-title">📷 مسح باركود الطالب لتسجيل الحضور</span>
+          </div>
+          <div class="card-body" style="text-align:center;padding:28px 20px">
+            <p style="font-size:13px;color:var(--muted);margin-bottom:16px">
+              وجِّه قارئ الباركود على بطاقة الطالب — التسجيل هيتم تلقائياً فور المسح.<br>
+              أو اكتب كود الطالب يدوياً واضغط Enter.
+            </p>
+            <input id="scan-input" autofocus placeholder="امسح الباركود هنا..."
+                   style="width:100%;padding:16px;font-size:18px;text-align:center;border:2px solid var(--pl);border-radius:10px;font-family:monospace;letter-spacing:1px"
+                   onkeydown="if(event.key==='Enter')processScan()" autocomplete="off">
+          </div>
+        </div>
+
+        <div id="scan-result" style="margin-bottom:16px"></div>
+
+        <div class="card">
+          <div class="card-hdr">
+            <span class="card-title">سجل المسح لهذا اليوم</span>
+            <span id="scan-count" style="font-size:12px;color:var(--muted)">0 عملية</span>
+          </div>
+          <div class="table-scroll compact">
+            <table id="scan-log-table">
+              <thead><tr><th>الوقت</th><th>الطالب</th><th>الكود</th><th>الدفعة</th></tr></thead>
+              <tbody id="scan-log-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI ASSISTANT -->
+    <div id="page-ai" class="content hidden">
+      <div class="card" style="max-width:760px;margin:0 auto">
+        <div class="card-hdr">
+          <span class="card-title">✨ المساعد الذكي — GTech AI</span>
+          <span style="font-size:11px;color:var(--muted)">تحليل مباشر من بيانات نظامك — بدون أي اتصال خارجي</span>
+        </div>
+        <div class="card-body">
+          <div id="ai-chat-area" style="min-height:320px;max-height:440px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:6px;margin-bottom:14px">
+            <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:12px 14px;align-self:flex-start;max-width:85%">
+              <div style="font-size:13px;line-height:1.7">👋 أهلاً بك! أنا مساعدك الذكي في GTech ERP.<br>اسألني عن أي شيء يخص أداء السنتر — المتأخرين، الإيرادات، الحضور، أو اطلب تحليلاً شاملاً.</div>
+            </div>
+          </div>
+          <div id="ai-suggestions" style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px"></div>
+          <div style="display:flex;gap:8px">
+            <input id="ai-input" placeholder="اكتب سؤالك هنا..." style="flex:1;padding:10px 14px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px" onkeydown="if(event.key==='Enter')sendAIQuestion()">
+            <button class="btn btn-primary" onclick="sendAIQuestion()"><i class="ti ti-send"></i> إرسال</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BACKUP & RESTORE -->
+    <div id="page-backup" class="content">
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-hdr"><span class="card-title">🖼️ شعار الأكاديمية</span></div>
+        <div class="card-body">
+          <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+            <div id="logo-preview-box" style="width:110px;height:80px;border:2px dashed var(--bdr);border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#f8fafc">
+              <img id="logo-preview" src="/api/settings/logo" style="max-width:100%;max-height:100%;display:none"
+                   onload="this.style.display='block';document.getElementById('logo-placeholder').style.display='none';"
+                   onerror="this.style.display='none';">
+              <span id="logo-placeholder" style="font-size:11px;color:var(--muted)">لا يوجد شعار</span>
+            </div>
+            <div style="flex:1;min-width:200px">
+              <p style="font-size:12px;color:var(--muted);margin-bottom:10px">
+                الشعار هيظهر تلقائياً في: الشريط الجانبي، صفحة تسجيل الدخول، بطاقات الطلاب، والإيصالات المطبوعة.<br>
+                الصيغ المدعومة: PNG, JPG, SVG, WEBP — بحد أقصى 3 ميجا.
+              </p>
+              <div style="display:flex;gap:8px">
+                <input type="file" id="logo-file-input" accept=".png,.jpg,.jpeg,.svg,.webp" style="display:none" onchange="uploadLogo()">
+                <button class="btn btn-primary btn-sm" onclick="document.getElementById('logo-file-input').click()"><i class="ti ti-upload"></i> رفع شعار جديد</button>
+                <button class="btn btn-ghost btn-sm" onclick="removeLogo()"><i class="ti ti-trash"></i> حذف الشعار</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">نسخة احتياطية كاملة</span></div>
+          <div class="card-body">
+            <p style="font-size:13px;color:var(--muted);margin-bottom:14px">
+              يشمل: الطلاب، المدرسون، المدفوعات، الخزينة، الأقسام، الدفعات، وجلسات الحضور.
+            </p>
+            <button class="btn btn-success" style="width:100%" onclick="doBackup()"><i class="ti ti-download"></i> تحميل نسخة احتياطية الآن</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">استعادة من نسخة احتياطية</span></div>
+          <div class="card-body">
+            <div class="alert alert-warn" style="margin-bottom:12px">
+              <span>⚠️</span><span style="font-size:12px">الاستعادة آمنة: تُضيف فقط البيانات غير الموجودة (بحسب الكود الفريد)، ولا تحذف أو تستبدل أي بيانات حالية أبداً.</span>
+            </div>
+            <div class="fg"><label>اختر ملف النسخة الاحتياطية (JSON)</label><input type="file" id="restore-file" accept=".json"></div>
+            <button class="btn btn-primary" style="width:100%" onclick="doRestore()"><i class="ti ti-upload"></i> استعادة البيانات</button>
+            <div id="restore-result" style="margin-top:12px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- GLOBAL SEARCH MODAL -->
+<div class="modal-overlay" id="modal-search">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-hdr">
+      <span style="font-weight:700;font-size:15px">🔍 بحث شامل</span>
+      <button class="close-btn" onclick="closeModal('modal-search')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input id="global-search-input" placeholder="ابحث في الطلاب، المدرسين، المدفوعات..." style="width:100%;padding:11px 14px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px" oninput="debounceGlobalSearch()" autofocus>
+      <div id="global-search-results" style="margin-top:16px;max-height:400px;overflow-y:auto"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TEACHER MODAL -->
+<div class="modal-overlay" id="modal-teacher">
+  <div class="modal modal-lg">
+    <div class="modal-hdr">
+      <span style="font-weight:700;font-size:15px" id="teacher-modal-title">مدرس جديد</span>
+      <button class="close-btn" onclick="closeModal('modal-teacher')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="t-id">
+      <div class="fg-grid2">
+        <div class="fg"><label>الاسم الأول *</label><input id="t-fn" maxlength="40"></div>
+        <div class="fg"><label>اسم الأب *</label><input id="t-sn" maxlength="40"></div>
+        <div class="fg"><label>اسم العائلة *</label><input id="t-fam" maxlength="40"></div>
+        <div class="fg"><label>الرقم القومي</label><input id="t-nid" maxlength="14" oninput="this.value=this.value.replace(/\D/g,'')"></div>
+        <div class="fg"><label>الهاتف *</label><input id="t-ph" maxlength="15"></div>
+        <div class="fg"><label>البريد الإلكتروني</label><input type="email" id="t-email"></div>
+        <div class="fg fg-full"><label>التخصص</label><input id="t-spec" placeholder="مثال: تمريض، تحاليل طبية"></div>
+        <div class="fg"><label>نوع الراتب</label>
+          <select id="t-salary-type">
+            <option value="fixed">راتب ثابت</option>
+            <option value="per_session">بالحصة</option>
+            <option value="percentage">نسبة من الإيراد</option>
+          </select>
+        </div>
+        <div class="fg"><label>قيمة الراتب (ج)</label><input type="number" id="t-salary-amount" min="0"></div>
+        <div class="fg"><label>تاريخ التعيين</label><input type="date" id="t-hire-date"></div>
+        <div class="fg"><label>الحالة</label>
+          <select id="t-status">
+            <option value="active">نشط</option><option value="suspended">موقوف</option><option value="left">تركَ العمل</option>
+          </select>
+        </div>
+        <div class="fg fg-full"><label>الأقسام التي يُدرِّسها</label>
+          <select id="t-depts" multiple style="height:90px"></select>
+          <span style="font-size:11px;color:var(--muted)">اضغط Ctrl لاختيار أكثر من قسم</span>
+        </div>
+        <div class="fg fg-full"><label>ملاحظات</label><textarea id="t-notes" rows="2" maxlength="500" style="resize:vertical"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-teacher')">إلغاء</button>
+      <button class="btn btn-success" onclick="saveTeacher()"><i class="ti ti-check"></i> <span id="t-save-lbl">حفظ</span></button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ══════════════════════════════════════════════════
+// UTILS
+const $=id=>document.getElementById(id);
+// [BUG-23] دالة تعقيم إلزامية لكل نص يُدخله المستخدم قبل عرضه بـ innerHTML — تمنع XSS المخزَّن
+function esc(str){
+  if(str===null||str===undefined) return '';
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function fmt(n){return Number(n||0).toLocaleString('ar-EG')+'  ج';}
+function fmtN(n){return Number(n||0).toLocaleString('ar-EG');}
+let _toastTimer;
+function toast(msg,type='',dur=2800){
+  const t=$('toast');t.textContent=msg;
+  t.className=type;t.style.display='block';
+  clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>t.style.display='none',dur);
+}
+async function api(url,method='GET',body=null){
+  const opts={method,headers:{'Content-Type':'application/json'}};
+  if(body) opts.body=JSON.stringify(body);
+  try{
+    const res=await fetch(url,opts);
+    if(res.status===403){
+      const d=await res.json().catch(()=>({}));
+      if(!d.licensed){location.reload();}
+      return d;
+    }
+    try{
+      return await res.json();
+    }catch(parseErr){
+      // السيرفر رجَّع رد مش JSON (مثلاً صفحة خطأ HTML) — بدل ما يتعلَّق الطلب بصمت
+      return {ok:false, msg:`استجابة غير متوقَّعة من السيرفر (كود ${res.status})`};
+    }
+  }catch(networkErr){
+    // فشل الاتصال بالشبكة فعلياً — رد واضح بدل تعليق الواجهة بصمت
+    return {ok:false, msg:'تعذَّر الاتصال بالسيرفر — تحقَّق من الإنترنت وحاول مرة أخرى', _networkError:true};
+  }
+}
+
+// ══════════════════════════════════════════════════
+// [NEW-20] نظام الجداول العالمي — فرز + سحب أعمدة + تمرير سلس + تصدير (زي Excel)
+// ══════════════════════════════════════════════════
+function enhanceTable(table){
+  if(!table || table._enhanced) return;
+  table._enhanced = true;
+  const headers = table.querySelectorAll('thead th');
+  headers.forEach((th, colIdx)=>{
+    const label = th.textContent.trim();
+    th.classList.add('sortable');
+    th.innerHTML = `<span class="th-inner"><span class="sort-arrow">↕</span><span class="th-label">${label}</span></span>`;
+    const resizer = document.createElement('span');
+    resizer.className = 'col-resizer';
+    th.appendChild(resizer);
+    _makeColumnResizable(th, resizer);
+    th.addEventListener('click', e=>{
+      if(e.target.classList.contains('col-resizer')) return;
+      _sortTableByColumn(table, colIdx, th);
+    });
+  });
+}
+
+function _sortTableByColumn(table, colIdx, th){
+  const tbody = table.querySelector('tbody');
+  if(!tbody) return;
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  const isAsc = !th.classList.contains('sort-asc');
+  table.querySelectorAll('th').forEach(h=>h.classList.remove('sort-asc','sort-desc'));
+  th.classList.add(isAsc ? 'sort-asc' : 'sort-desc');
+
+  rows.sort((a,b)=>{
+    const cellA = a.children[colIdx]?.textContent.trim() || '';
+    const cellB = b.children[colIdx]?.textContent.trim() || '';
+    const numA = parseFloat(cellA.replace(/[^\d.-]/g,''));
+    const numB = parseFloat(cellB.replace(/[^\d.-]/g,''));
+    const bothNumeric = !isNaN(numA) && !isNaN(numB) && /\d/.test(cellA) && /\d/.test(cellB);
+    const cmp = bothNumeric ? (numA-numB) : cellA.localeCompare(cellB,'ar');
+    return isAsc ? cmp : -cmp;
+  });
+  rows.forEach(r=>tbody.appendChild(r));
+}
+
+function _makeColumnResizable(th, resizer){
+  let startX=0, startWidth=0;
+  resizer.addEventListener('mousedown', e=>{
+    startX = e.pageX; startWidth = th.offsetWidth;
+    resizer.classList.add('resizing');
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    e.preventDefault(); e.stopPropagation();
+  });
+  function onMove(e){
+    const newWidth = startWidth + (e.pageX - startX) * (document.dir==='rtl'?-1:1);
+    if(newWidth > 50) th.style.width = newWidth+'px';
+  }
+  function onUp(){
+    resizer.classList.remove('resizing');
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+  }
+}
+
+function exportTableToExcel(tableId, filename){
+  const table = document.getElementById(tableId);
+  if(!table){toast('⚠️ الجدول غير موجود','er');return;}
+  const rows = Array.from(table.querySelectorAll('tr'));
+  const csv = rows.map(row=>
+    Array.from(row.querySelectorAll('th,td')).map(cell=>{
+      let text = cell.querySelector('.th-label')?.textContent || cell.textContent || '';
+      text = text.replace(/"/g,'""').trim();
+      return `"${text}"`;
+    }).join(',')
+  ).join('\r\n');
+  const blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8;'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename || 'export.csv';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  toast('✓ تم تصدير الجدول بنجاح','ok');
+}
+
+const statusMap={active:'مقيد',suspended:'موقوف',withdrawn:'منسحب',graduated:'متخرج'};
+const statusClass={active:'b-active',suspended:'b-suspended',withdrawn:'b-withdrawn',graduated:'b-graduated'};
+const payStatusMap={paid:'مسدَّد',partial:'جزئي',overdue:'متأخر'};
+const payStatusClass={paid:'b-paid',partial:'b-partial',overdue:'b-overdue'};
+const roleMap={admin:'مدير',students:'شؤون الطلاب',accounts:'الحسابات',reception:'استقبال'};
+const colors=['#3b82f6','#8b5cf6','#f59e0b','#10b981','#ef4444','#06b6d4','#f97316','#84cc16','#6b7280'];
+
+// ══════════════════════════════════════════════════
+// NAVIGATION
+const pageMeta={
+  dashboard:{title:'لوحة التحكم',crumb:'الرئيسية'},
+  students:{title:'إدارة الطلاب',crumb:'الطلاب'},
+  teachers:{title:'إدارة المدرسين',crumb:'المدرسون'},
+  attendance:{title:'الحضور والغياب',crumb:'المدرسون'},
+  scan:{title:'المسح السريع (باركود)',crumb:'المدرسون'},
+  fees:{title:'المصروفات والأقساط',crumb:'المالية'},
+  finance:{title:'الإيرادات والمصروفات',crumb:'المالية'},
+  departments:{title:'الأقسام والدفعات',crumb:'الإدارة'},
+  reports:{title:'التقارير',crumb:'التقارير'},
+  notifications:{title:'الإشعارات',crumb:'الإشعارات'},
+  users:{title:'المستخدمون',crumb:'النظام'},
+  backup:{title:'النسخ الاحتياطي والاستعادة',crumb:'النظام'},
+  actlog:{title:'سجل النشاط',crumb:'النظام'},
+  ai:{title:'المساعد الذكي',crumb:'GTech AI'},
+};
+let currentPage='dashboard';
+function showPage(id,el){
+  document.querySelectorAll('[id^="page-"]').forEach(p=>p.classList.add('hidden'));
+  $('page-'+id)?.classList.remove('hidden');
+  document.querySelectorAll('.s-item').forEach(i=>i.classList.remove('active'));
+  if(el) el.classList.add('active');
+  const m=pageMeta[id]||{};
+  $('topbar-title').textContent=m.title||id;
+  $('topbar-crumb').textContent=m.crumb||'';
+  currentPage=id;
+  if(id==='dashboard') loadDashboard();
+  if(id==='students'){loadDepts();loadStudents();}
+  if(id==='teachers') loadTeachers();
+  if(id==='attendance') initAttendancePage();
+  if(id==='scan') initScanPage();
+  if(id==='fees') loadFees();
+  if(id==='finance') loadFinance();
+  if(id==='departments'){loadDepts();loadBatchesList();}
+  if(id==='reports') loadReports();
+  if(id==='notifications') loadNotifications();
+  if(id==='users') loadUsers();
+  if(id==='actlog') loadActivityLog();
+  if(id==='ai') loadAISuggestions();
+
+}
+function switchTab(btn,paneId){
+  btn.closest('.tab-nav').querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  let el=btn.closest('.tab-nav').nextElementSibling;
+  while(el){el.classList.remove('active');el=el.nextElementSibling;}
+  $(paneId)?.classList.add('active');
+}
+function openModal(id){$(id).classList.add('open');}
+function closeModal(id){$(id).classList.remove('open');}
+
+// ══════════════════════════════════════════════════
+// DASHBOARD
+async function loadDashboard(){
+  const d=await api('/api/dashboard');
+  $('d-students').textContent=fmtN(d.total_students);
+  $('d-income').textContent=fmt(d.month_income);
+  $('d-overdue').textContent=fmtN(d.overdue);
+  $('d-net').textContent=fmt(d.net_profit);
+  $('d-new').className='stat-chg up';
+  $('d-new').textContent=`↑ ${d.new_students} طالب جديد هذا الشهر`;
+  if(d.income_change!==undefined){
+    const ic=$('d-income-chg');
+    ic.className='stat-chg '+(d.income_change>=0?'up':'dn');
+    ic.textContent=(d.income_change>=0?'↑':'↓')+Math.abs(d.income_change)+'% عن الشهر الماضي';
+  }
+  $('badge-students').textContent=d.total_students;
+  $('badge-overdue').textContent=d.overdue;
+  if(d.client_name) $('s-client-name').textContent=d.client_name;
+  if(d.max_users && d.max_users<999)
+    $('user-limit').textContent=`${d.current_users||'—'}/${d.max_users} مستخدم`;
+
+  const bars=$('dept-bars'),lbls=$('dept-labels');
+  bars.innerHTML='';lbls.innerHTML='';
+  const max=Math.max(...(d.dept_stats||[]).map(x=>x.count),1);
+  (d.dept_stats||[]).forEach((x,i)=>{
+    const pct=Math.round((x.count/max)*100);
+    bars.innerHTML+=`<div class="bar" style="height:${Math.max(pct,4)}%;background:${colors[i%colors.length]}" title="${esc(x.name)}: ${x.count} طالب"></div>`;
+    lbls.innerHTML+=`<div class="bar-lbl">${esc(x.name.substring(0,4))}</div>`;
+  });
+  $('dash-alerts').innerHTML=`
+    ${d.overdue>0?`<div class="alert alert-danger"><span>⚠️</span><div><div class="alert-txt">${d.overdue} طالب لم يسددوا</div><div class="alert-sub">يحتاجون متابعة</div></div></div>`:''}
+    <div class="alert alert-info"><span>📊</span><div><div class="alert-txt">صافي الشهر: ${fmt(d.net_profit)}</div></div></div>
+    <div class="alert alert-info"><span>👥</span><div><div class="alert-txt">${d.active_students} طالب نشط حالياً</div></div></div>`;
+  const ov=await api('/api/payments/overdue');
+  $('dash-overdue').innerHTML=ov.slice(0,5).map(s=>`
+    <tr><td>${esc(s.code)}</td><td><a href="#" onclick="showDetail(${s.id});return false" style="color:var(--pl);font-weight:700">${esc(s.full_name)}</a></td>
+    <td><span class="badge b-dept">${esc(s.department)||'—'}</span></td>
+    <td class="text-err fw7">${fmt(s.remaining)}</td>
+    <td><button class="btn btn-outline btn-sm" onclick="openPayModalFor(${s.id},'${esc(s.code)}')"><i class="ti ti-cash"></i></button></td></tr>`).join('');
+}
+
+// ══════════════════════════════════════════════════
+// STUDENTS  [BUG-12 Pagination fixed]
+let currentStudentPage=1;
+let searchTimer;
+function debounceSearch(){clearTimeout(searchTimer);searchTimer=setTimeout(()=>{currentStudentPage=1;loadStudents();},350);}
+async function loadStudents(page){
+  if(page) currentStudentPage=page;
+  const q=$('search-q')?.value||'';
+  const dept=$('filter-dept')?.value||'';
+  const status=$('filter-status')?.value||'';
+  const res=await api(`/api/students?q=${encodeURIComponent(q)}&dept=${encodeURIComponent(dept)}&status=${encodeURIComponent(status)}&page=${currentStudentPage}`);
+  const students=res.students||[];
+  $('students-body').innerHTML=students.length?students.map(s=>`
+    <tr>
+      <td style="font-family:monospace;font-size:12px">${esc(s.code)}</td>
+      <td><a href="#" onclick="showDetail(${s.id});return false" style="color:var(--pl);font-weight:600">${esc(s.full_name)}</a></td>
+      <td><span class="badge b-dept">${esc(s.department)||'—'}</span></td>
+      <td style="font-size:12px;color:var(--muted)">${esc(s.batch)||'—'}</td>
+      <td>${esc(s.phone)||'—'}</td>
+      <td class="${s.remaining>0?'text-err':'text-ok'} fw7">${fmt(s.remaining)}</td>
+      <td><span class="badge ${payStatusClass[s.payment_status]||'b-partial'}">${payStatusMap[s.payment_status]||'—'}</span></td>
+      <td><span class="badge ${statusClass[s.status]||'b-active'}">${statusMap[s.status]||esc(s.status)}</span></td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-ghost btn-sm" onclick="showDetail(${s.id})" title="عرض"><i class="ti ti-eye"></i></button>
+        <button class="btn btn-ghost btn-sm" onclick="openPayModalFor(${s.id},'${esc(s.code)}')" title="دفعة"><i class="ti ti-cash"></i></button>
+      </td></tr>`).join('')
+    :`<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:24px">لا توجد نتائج</td></tr>`;
+  // Pagination
+  const pages=res.pages||1,total=res.total||0;
+  let pg='';
+  if(pages>1){
+    pg+=`<span class="page-info">إجمالي: ${total}</span>`;
+    if(currentStudentPage>1) pg+=`<button class="page-btn" onclick="loadStudents(${currentStudentPage-1})">‹ السابق</button>`;
+    const start=Math.max(1,currentStudentPage-2),end=Math.min(pages,currentStudentPage+2);
+    for(let i=start;i<=end;i++) pg+=`<button class="page-btn${i===currentStudentPage?' active':''}" onclick="loadStudents(${i})">${i}</button>`;
+    if(currentStudentPage<pages) pg+=`<button class="page-btn" onclick="loadStudents(${currentStudentPage+1})">التالي ›</button>`;
+  }
+  $('students-pagination').innerHTML=pg;
+  enhanceTable(document.getElementById('students-table'));
+}
+
+let _currentStudentDetail=null;
+async function showDetail(id){
+  const s=await api(`/api/students/${id}`);
+  _currentStudentDetail=s;
+  $('detail-name').textContent=s.full_name;
+  $('detail-code').textContent=s.code;
+  $('detail-body').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px;font-size:13px">
+      <div><b>الرقم القومي:</b> ${esc(s.national_id)||'—'}</div><div><b>تاريخ الميلاد:</b> ${esc(s.birth_date)||'—'}</div>
+      <div><b>الهاتف:</b> ${esc(s.phone)||'—'}</div><div><b>ولي الأمر:</b> ${esc(s.guardian_phone)||'—'}</div>
+      <div><b>القسم:</b> ${esc(s.department)||'—'}</div><div><b>الدفعة:</b> ${esc(s.batch)||'—'}</div>
+      <div><b>الحالة:</b> <span class="badge ${statusClass[s.status]}">${statusMap[s.status]}</span></div>
+      <div><b>حالة السداد:</b> <span class="badge ${payStatusClass[s.payment_status]}">${payStatusMap[s.payment_status]}</span></div>
+      ${s.address?`<div class="fg-full"><b>العنوان:</b> ${esc(s.address)}</div>`:''}
+      ${s.notes?`<div class="fg-full"><b>ملاحظات:</b> ${esc(s.notes)}</div>`:''}
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:14px">
+      <div class="stat" style="flex:1;padding:11px"><div class="stat-val">${fmt(s.total_fees)}</div><div class="stat-lbl">إجمالي الرسوم</div></div>
+      <div class="stat" style="flex:1;padding:11px"><div class="stat-val text-ok">${fmt(s.total_paid)}</div><div class="stat-lbl">المدفوع</div></div>
+      <div class="stat" style="flex:1;padding:11px"><div class="stat-val text-err">${fmt(s.remaining)}</div><div class="stat-lbl">المتبقي</div></div>
+    </div>
+    <div style="font-weight:700;font-size:13px;margin-bottom:7px">سجل الدفعات (${s.payments.length})</div>
+    <table><thead><tr><th>رقم الإيصال</th><th>المبلغ</th><th>النوع</th><th>الطريقة</th><th>التاريخ</th><th></th></tr></thead>
+    <tbody>${s.payments.length?s.payments.map(p=>`
+      <tr><td style="font-family:monospace;font-size:11px">${esc(p.receipt_no)}</td>
+      <td class="text-ok fw7">${fmt(p.amount)}</td>
+      <td>${esc(p.pay_type)}</td><td>${esc(p.pay_method)}</td>
+      <td style="font-size:12px;color:var(--muted)">${esc(p.created_at)}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="printReceipt(${p.id})" title="طباعة"><i class="ti ti-printer"></i></button></td></tr>`)
+      .join(''):`<tr><td colspan="6" style="text-align:center;color:var(--muted)">لا توجد دفعات</td></tr>`}</tbody></table>
+    ${s.status_history.length?`
+    <div style="font-weight:700;font-size:13px;margin:12px 0 7px">تاريخ حالة الطالب</div>
+    <table><thead><tr><th>من</th><th>إلى</th><th>ملاحظة</th><th>التاريخ</th></tr></thead>
+    <tbody>${s.status_history.map(h=>`<tr><td><span class="badge ${statusClass[h.old]}">${statusMap[h.old]||esc(h.old)}</span></td><td><span class="badge ${statusClass[h.new]}">${statusMap[h.new]||esc(h.new)}</span></td><td>${esc(h.note)||'—'}</td><td style="font-size:12px;color:var(--muted)">${esc(h.created_at)}</td></tr>`).join('')}</tbody></table>
+    `:''}`;
+  openModal('modal-detail');
+}
+
+// [BUG-11] Full edit support
+function openEditStudent(){
+  if(!_currentStudentDetail) return;
+  const s=_currentStudentDetail;
+  closeModal('modal-detail');
+  $('student-modal-title').textContent='تعديل بيانات الطالب';
+  $('s-save-lbl').textContent='حفظ التعديلات';
+  $('s-id').value=s.id;
+  $('s-fn').value=s.first_name; $('s-sn').value=s.second_name;
+  $('s-tn').value=s.third_name; $('s-fam').value=s.family_name;
+  $('s-nid').value=s.national_id||'';
+  $('s-dob').value=s.birth_date||'';
+  $('s-ph').value=s.phone||''; $('s-gph').value=s.guardian_phone||'';
+  $('s-addr').value=s.address||'';
+  $('s-status').value=s.status;
+  $('s-notes').value=s.notes||'';
+  $('s-fees').value=s.total_fees||'';
+  // load depts then set value
+  api('/api/departments').then(depts=>{
+    const sel=$('s-dept');
+    sel.innerHTML='<option value="">— اختر —</option>'+depts.map(d=>`<option value="${d.id}">${esc(d.name)}</option>`).join('');
+    sel.value=s.department_id||'';
+    if(s.department_id) loadBatches(s.batch_id);
+  });
+  openModal('modal-student');
+}
+
+async function openStudentModal(){
+  closeModal('modal-detail');
+  $('student-modal-title').textContent='تسجيل طالب جديد';
+  $('s-save-lbl').textContent='تسجيل الطالب';
+  $('s-id').value='';
+  ['s-fn','s-sn','s-tn','s-fam','s-nid','s-ph','s-gph','s-addr','s-notes'].forEach(id=>$(id).value='');
+  $('s-dob').value=''; $('s-status').value='active'; $('s-fees').value='';
+  const depts=await api('/api/departments');
+  $('s-dept').innerHTML='<option value="">— اختر القسم —</option>'+depts.map(d=>`<option value="${d.id}">${esc(d.name)}</option>`).join('');
+  $('s-batch').innerHTML='<option value="">— اختر الدفعة —</option>';
+  // fill dept filters
+  ['filter-dept'].forEach(id=>{
+    const el=$(id);if(el)el.innerHTML='<option value="">كل الأقسام</option>'+depts.map(d=>`<option value="${esc(d.name)}">${esc(d.name)}</option>`).join('');
+  });
+  openModal('modal-student');
+}
+
+async function loadBatches(setBatchId=null){
+  const deptId=$('s-dept').value;
+  const batches=deptId?await api(`/api/batches?dept_id=${deptId}`):[]; 
+  $('s-batch').innerHTML='<option value="">— اختر الدفعة —</option>'+batches.map(b=>`<option value="${b.id}">${esc(b.name)}</option>`).join('');
+  if(setBatchId) $('s-batch').value=setBatchId;
+  // auto-fill fees
+  if(deptId && !$('s-id').value){
+    const depts=await api('/api/departments');
+    const dept=depts.find(d=>d.id==deptId);
+    if(dept) $('s-fees').value=dept.annual_fee;
+  }
+}
+
+async function saveStudent(){
+  const sid=$('s-id').value;
+  const body={
+    first_name:$('s-fn').value.trim(), second_name:$('s-sn').value.trim(),
+    third_name:$('s-tn').value.trim(), family_name:$('s-fam').value.trim(),
+    national_id:$('s-nid').value.trim()||null,
+    birth_date:$('s-dob').value||null,
+    phone:$('s-ph').value.trim(), guardian_phone:$('s-gph').value.trim(),
+    address:$('s-addr').value.trim(), notes:$('s-notes').value.trim(),
+    department_id:parseInt($('s-dept').value)||null,
+    batch_id:parseInt($('s-batch').value)||null,
+    status:$('s-status').value,
+    total_fees:parseFloat($('s-fees').value)||null
+  };
+  if(!body.first_name||!body.second_name||!body.third_name||!body.family_name){toast('⚠️ الاسم الرباعي كاملاً مطلوب','er');return;}
+  const method=sid?'PUT':'POST';
+  const url=sid?`/api/students/${sid}`:'/api/students';
+  const r=await apiOfflineSafe(url,method,body,`طالب: ${body.first_name} ${body.family_name}`);
+  if(r.ok){
+    if(r._queued) toast(r.msg,'',5000);
+    else toast(sid?'✓ تم تحديث بيانات الطالب':'✓ تم تسجيل الطالب! الكود: '+(r.code||''),'ok');
+    closeModal('modal-student');
+    if(currentPage==='students') loadStudents();
+    if(currentPage==='dashboard') loadDashboard();
+  } else toast('⚠️ '+(r.msg||'خطأ'),'er');
+}
+
+// ══════════════════════════════════════════════════
+// PAYMENTS
+let _payStudentId=null;
+function openPayModal(){
+  _payStudentId=null;
+  $('pay-code').value=''; $('pay-amount').value='';
+  $('pay-info').textContent=''; $('receipt-preview').classList.add('hidden');
+  $('pay-notes').value='';
+  openModal('modal-payment');
+}
+async function openPayModalFor(sid,code){
+  openPayModal();
+  $('pay-code').value=code;
+  await lookupStudent(code);
+  closeModal('modal-detail');
+}
+async function lookupStudent(code){
+  code=code.trim().toUpperCase();
+  if(code.length<8){$('pay-info').textContent='';_payStudentId=null;return;}
+  const res=await api(`/api/students?q=${encodeURIComponent(code)}&page=1`);
+  const students=res.students||[];
+  const s=students.find(x=>x.code===code);
+  if(s){
+    $('pay-info').textContent=`✓ ${s.full_name} | المتبقي: ${fmt(s.remaining)}`;
+    $('pay-info').style.color='var(--ok)';
+    _payStudentId=s.id;
+    updateReceiptPreview(s);
+  } else {
+    $('pay-info').textContent='⚠️ لم يُعثر على الطالب';
+    $('pay-info').style.color='var(--err)';
+    _payStudentId=null;
+    $('receipt-preview').classList.add('hidden');
+  }
+}
+function updateReceiptPreview(s){
+  const amount=parseFloat($('pay-amount').value)||0;
+  const remaining=s.remaining-amount;
+  $('receipt-preview').innerHTML=`
+    <div class="receipt-hdr">
+      <div style="font-weight:800;font-size:14px">🎓 أكاديمية GTech</div>
+      <div style="font-size:11px;color:#9ca3af">${new Date().toLocaleDateString('ar-EG')}</div>
+    </div>
+    <div class="receipt-row"><span style="color:#6b7280">الطالب:</span><span style="font-weight:700">${esc(s.full_name)}</span></div>
+    <div class="receipt-row"><span style="color:#6b7280">الكود:</span><span>${esc(s.code)}</span></div>
+    <div class="receipt-row"><span style="color:#6b7280">القسم:</span><span>${esc(s.department)||'—'}</span></div>
+    ${amount>0?`<div class="receipt-total"><span>المبلغ المدفوع:</span><span style="color:var(--ok)">${fmt(amount)}</span></div>
+    <div class="receipt-row" style="margin-top:4px"><span style="color:#6b7280">المتبقي بعد الدفع:</span><span style="color:var(--err);font-weight:700">${fmt(Math.max(0,remaining))}</span></div>`:''}`;
+  $('receipt-preview').classList.remove('hidden');
+}
+async function savePayment(doPrint){
+  if(!_payStudentId){toast('⚠️ أدخل كود طالب صحيح','er');return;}
+  const amount=parseFloat($('pay-amount').value);
+  if(!amount||amount<=0){toast('⚠️ أدخل مبلغاً أكبر من الصفر','er');return;}
+  const r=await apiOfflineSafe('/api/payments','POST',{
+    student_id:_payStudentId, amount,
+    pay_type:$('pay-type').value, pay_method:$('pay-method').value,
+    notes:$('pay-notes').value
+  }, `دفعة ${amount} ج`);
+  if(r.ok){
+    if(r._queued){
+      toast(r.msg,'',5000);
+    } else {
+      toast(`✓ تم تسجيل الدفعة! رقم الإيصال: ${r.receipt_no}`,'ok');
+      if(doPrint) printReceiptData(r);
+    }
+    closeModal('modal-payment');
+    if(currentPage==='students') loadStudents();
+    if(currentPage==='dashboard') loadDashboard();
+  } else toast('⚠️ '+(r.msg||'خطأ في الحفظ'),'er');
+}
+
+// [NEW-04] Real print function
+async function printReceipt(paymentId){
+  const r=await api(`/api/payments/${paymentId}/receipt`);
+  printReceiptData(r);
+}
+function printReceiptData(r){
+  const institution=esc(r.institution)||'GTech Academy';
+  const html=`
+    <div style="font-family:Arial,sans-serif;direction:rtl;width:300px;margin:0 auto;padding:16px;border:1px solid #ccc;border-radius:8px">
+      <div style="text-align:center;margin-bottom:12px;border-bottom:1px dashed #ccc;padding-bottom:10px">
+        <div style="font-size:18px;font-weight:800">🎓 ${institution}</div>
+        <div style="font-size:12px;color:#777">إيصال سداد</div>
+        <div style="font-size:11px;color:#999">${new Date().toLocaleString('ar-EG')}</div>
+      </div>
+      <div style="font-size:12px"><b>رقم الإيصال:</b> ${esc(r.receipt_no)}</div>
+      <div style="font-size:12px;margin:4px 0"><b>الطالب:</b> ${esc(r.student_name)}</div>
+      <div style="font-size:12px"><b>الكود:</b> ${esc(r.student_code)}</div>
+      <div style="font-size:12px;margin:4px 0"><b>القسم:</b> ${esc(r.department)||'—'}</div>
+      <div style="font-size:12px"><b>نوع الدفع:</b> ${esc(r.pay_type)} — ${esc(r.pay_method)}</div>
+      ${r.notes?`<div style="font-size:12px"><b>ملاحظة:</b> ${esc(r.notes)}</div>`:''}
+      <div style="border-top:1px solid #ccc;margin:10px 0;padding-top:8px">
+        <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:800">
+          <span>المبلغ المدفوع:</span><span style="color:#16a34a">${fmt(r.amount)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-top:4px">
+          <span>إجمالي الرسوم:</span><span>${fmt(r.total_fees)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px">
+          <span>المتبقي:</span><span style="color:#dc2626">${fmt(r.remaining)}</span>
+        </div>
+      </div>
+      <div style="text-align:center;font-size:10px;color:#999;margin-top:8px">شكراً لكم — GTech ERP v4.0</div>
+    </div>`;
+  const win=window.open('','_blank','width=400,height=500');
+  win.document.write(`<!DOCTYPE html><html><head><title>إيصال</title><style>body{margin:16px}@media print{body{margin:0}}</style></head><body>${html}<script>window.onload=()=>{window.print();}<\/script></body></html>`);
+  win.document.close();
+}
+
+// ══════════════════════════════════════════════════
+// FEES & OVERDUE
+async function loadFees(){
+  const depts=await api('/api/departments');
+  $('fees-body').innerHTML=depts.map(d=>`
+    <tr><td><span class="badge b-dept">${esc(d.name)}</span></td>
+    <td>${d.student_count||0}</td>
+    <td>${fmt(d.annual_fee)}</td><td>${fmt(d.first_pay)}</td>
+    <td>${d.installments} قسط</td>
+    <td>${fmt(Math.round((d.annual_fee-d.first_pay)/d.installments))}/شهر</td></tr>`).join('');
+}
+async function loadOverdue(){
+  const ov=await api('/api/payments/overdue');
+  $('overdue-count').textContent=`${ov.length} طالب`;
+  $('overdue-body').innerHTML=ov.map(s=>`
+    <tr>
+      <td><a href="#" onclick="showDetail(${s.id});return false" style="color:var(--pl);font-weight:600">${esc(s.full_name)}</a></td>
+      <td><span class="badge b-dept">${esc(s.department)||'—'}</span></td>
+      <td>${esc(s.phone)||'—'}</td>
+      <td>${fmt(s.total_fees)}</td>
+      <td class="text-ok">${fmt(s.total_paid)}</td>
+      <td class="text-err fw7">${fmt(s.remaining)}</td>
+      <td><button class="btn btn-outline btn-sm" onclick="openPayModalFor(${s.id},'${esc(s.code)}')"><i class="ti ti-cash"></i> دفع</button></td>
+    </tr>`).join('');
+  enhanceTable(document.getElementById('overdue-table'));
+}
+
+// [NEW-05] Quick payment fully functional
+let _qStudentId=null,_qStudentData=null;
+async function previewQuick(){
+  const code=$('q-code').value.trim().toUpperCase();
+  const amount=parseFloat($('q-amount').value)||0;
+  if(code.length<8){$('q-info').textContent='';_qStudentId=null;return;}
+  if(!_qStudentData||_qStudentData.code!==code){
+    const res=await api(`/api/students?q=${encodeURIComponent(code)}&page=1`);
+    const s=(res.students||[]).find(x=>x.code===code);
+    _qStudentData=s||null;
+    _qStudentId=s?s.id:null;
+    $('q-info').textContent=s?`✓ ${s.full_name} — المتبقي: ${fmt(s.remaining)}`:'⚠️ لم يُعثر على الطالب';
+    $('q-info').style.color=s?'var(--ok)':'var(--err)';
+  }
+  if(_qStudentData){
+    const s=_qStudentData;
+    const after=Math.max(0,s.remaining-amount);
+    $('q-preview').innerHTML=`
+      <div class="receipt-hdr"><div style="font-weight:800">🎓 أكاديمية GTech</div><div style="font-size:11px;color:#9ca3af">${new Date().toLocaleDateString('ar-EG')}</div></div>
+      <div class="receipt-row"><span>الطالب:</span><span>${esc(s.full_name)}</span></div>
+      <div class="receipt-row"><span>الكود:</span><span>${esc(s.code)}</span></div>
+      ${amount>0?`<div class="receipt-total"><span>المبلغ:</span><span style="color:var(--ok)">${fmt(amount)}</span></div>
+      <div class="receipt-row"><span>المتبقي:</span><span style="color:var(--err);font-weight:700">${fmt(after)}</span></div>`:''}`;
+  }
+}
+async function quickPayment(){
+  if(!_qStudentId){toast('⚠️ أدخل كود طالب صحيح','er');return;}
+  const amount=parseFloat($('q-amount').value);
+  if(!amount||amount<=0){toast('⚠️ أدخل مبلغاً أكبر من الصفر','er');return;}
+  const r=await api('/api/payments','POST',{
+    student_id:_qStudentId, amount, pay_type:'monthly',
+    pay_method:$('q-method').value
+  });
+  if(r.ok){
+    toast(`✓ رقم الإيصال: ${r.receipt_no}`,'ok');
+    printReceiptData(r);
+    $('q-code').value=''; $('q-amount').value='';
+    _qStudentId=null; _qStudentData=null;
+    $('q-info').textContent=''; $('q-preview').innerHTML='<div style="text-align:center;color:var(--muted);padding:20px;font-size:13px">أدخل كود الطالب للمعاينة</div>';
+  } else toast('⚠️ '+(r.msg||'خطأ'),'er');
+}
+
+// ══════════════════════════════════════════════════
+// FINANCE
+async function loadFinance(){
+  const period=$('txn-period')?.value||'month';
+  const d=await api(`/api/transactions?period=${period}`);
+  $('f-income').textContent=fmt(d.income);
+  $('f-expense').textContent=fmt(d.expense);
+  $('f-net').textContent=fmt(d.net);
+  $('txn-body').innerHTML=(d.transactions||[]).slice(0,30).map(t=>`
+    <tr><td style="font-size:12px;color:var(--muted)">${esc(t.created_at.split(' ')[0])}</td>
+    <td style="font-size:12px">${esc(t.description||t.category)}</td>
+    <td><span class="badge ${t.type==='income'?'b-income':'b-expense'}">${t.type==='income'?'إيراد':'مصروف'}</span></td>
+    <td class="fw7 ${t.type==='income'?'text-ok':'text-err'}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</td></tr>`).join('');
+  enhanceTable(document.getElementById('txn-table'));
+}
+async function saveTxn(){
+  const amount=parseFloat($('txn-amount').value);
+  if(!amount||amount<=0){toast('⚠️ المبلغ يجب أن يكون أكبر من الصفر','er');return;}
+  const r=await apiOfflineSafe('/api/transactions','POST',{
+    type:$('txn-type').value, category:$('txn-cat').value,
+    amount, description:$('txn-desc').value
+  }, `حركة مالية ${amount} ج`);
+  if(r.ok){
+    toast(r._queued?r.msg:'✓ تم تسجيل الحركة المالية', r._queued?'':'ok', r._queued?5000:2800);
+    $('txn-amount').value='';$('txn-desc').value='';loadFinance();
+  }
+  else toast('⚠️ '+(r.msg||'خطأ'),'er');
+}
+
+// ══════════════════════════════════════════════════
+// DEPARTMENTS [NEW-06]
+async function loadDepts(){
+  const depts=await api('/api/departments');
+  $('depts-body').innerHTML=depts.map(d=>`
+    <tr>
+      <td><span class="badge b-dept">${esc(d.name)}</span></td>
+      <td>${d.student_count||0}</td>
+      <td>${fmt(d.annual_fee)}</td>
+      <td>${d.installments} قسط</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="openDeptModal(${d.id},'${esc(d.name)}',${d.annual_fee},${d.first_pay},${d.installments})"><i class="ti ti-edit"></i></button></td>
+    </tr>`).join('');
+  ['b-dept','filter-dept'].forEach(id=>{
+    const el=$(id);
+    if(el) el.innerHTML=(id.includes('filter')?'<option value="">كل الأقسام</option>':'')+depts.map(d=>`<option value="${id.includes('filter')?esc(d.name):d.id}">${esc(d.name)}</option>`).join('');
+  });
+}
+function openDeptModal(id='',name='',fee=0,first=0,inst=10){
+  $('d-id').value=id;
+  $('dept-modal-title').textContent=id?'تعديل القسم':'قسم جديد';
+  $('d-name').value=name; $('d-fee').value=fee||''; $('d-first').value=first||''; $('d-inst').value=inst||10;
+  openModal('modal-dept');
+}
+async function saveDept(){
+  const id=$('d-id').value;
+  const body={name:$('d-name').value.trim(), annual_fee:parseFloat($('d-fee').value)||0,
+    first_pay:parseFloat($('d-first').value)||0, installments:parseInt($('d-inst').value)||10};
+  if(!body.name){toast('اسم القسم مطلوب','er');return;}
+  const url=id?`/api/departments/${id}`:'/api/departments';
+  const method=id?'PUT':'POST';
+  const r=await api(url,method,body);
+  if(r.ok){toast('✓ تم حفظ القسم','ok');closeModal('modal-dept');loadDepts();}
+  else toast('⚠️ '+(r.msg||'خطأ'),'er');
+}
+
+async function loadBatchesList(){
+  const batches=await api('/api/batches');
+  const depts=await api('/api/departments');
+  const deptMap=Object.fromEntries(depts.map(d=>[d.id,d.name]));
+  $('batches-body').innerHTML=batches.map(b=>`
+    <tr><td>${esc(b.name)}</td><td><span class="badge b-dept">${esc(deptMap[b.dept_id])||'—'}</span></td><td>${b.year||'—'}</td><td>${b.student_count||0}</td>
+    <td><button class="btn btn-ghost btn-sm" onclick="printBatchIdCards(${b.id})" title="طباعة بطاقات الدفعة كاملة"><i class="ti ti-id"></i></button></td></tr>`).join('');
+}
+
+async function addBatch(){
+  const name=$('b-name').value.trim();
+  const dept=parseInt($('b-dept').value);
+  if(!name||!dept){toast('⚠️ القسم والاسم مطلوبان','er');return;}
+  const r=await api('/api/batches','POST',{
+    name, department_id:dept, year:parseInt($('b-year').value)||null
+  });
+  if(r.ok){toast('✓ تمت إضافة الدفعة','ok');$('b-name').value='';$('b-year').value='';loadBatchesList();}
+  else toast('⚠️ '+(r.msg||'خطأ'),'er');
+}
+
+// ══════════════════════════════════════════════════
+// REPORTS
+async function loadReports(){
+  const d=await api('/api/reports/summary');
+  $('report-summary').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+      <div class="stat"><div class="stat-icon blue"><i class="ti ti-users"></i></div><div class="stat-val">${fmtN(d.total)}</div><div class="stat-lbl">إجمالي الطلاب</div></div>
+      <div class="stat"><div class="stat-icon green"><i class="ti ti-cash"></i></div><div class="stat-val">${fmt(d.total_paid)}</div><div class="stat-lbl">إجمالي المُحصَّل</div></div>
+      <div class="stat"><div class="stat-icon red"><i class="ti ti-clock-exclamation"></i></div><div class="stat-val">${fmt(d.total_remaining)}</div><div class="stat-lbl">إجمالي المتبقي</div></div>
+      <div class="stat"><div class="stat-icon teal"><i class="ti ti-percentage"></i></div><div class="stat-val">${d.collection_rate}%</div><div class="stat-lbl">نسبة التحصيل</div></div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════
+// NOTIFICATIONS
+async function loadNotifications(){
+  const notifs=await api('/api/notifications');
+  $('notif-body').innerHTML=(notifs||[]).map(n=>`
+    <tr><td style="font-size:11px;color:var(--muted)">${esc(n.created_at.split(' ')[0])}</td>
+    <td><span class="badge b-dept">${esc(n.channel)}</span></td>
+    <td>${n.target==='all'?'كل الطلاب':'المتأخرون'}</td>
+    <td>${n.sent_count}</td>
+    <td><span class="badge b-paid">${esc(n.status)}</span></td></tr>`).join('');
+}
+async function sendNotification(){
+  const msg=$('notif-msg').value.trim();
+  if(!msg){toast('⚠️ نص الرسالة مطلوب','er');return;}
+  const r=await api('/api/notifications','POST',{
+    title:$('notif-title').value||'إشعار',
+    message:msg, channel:$('notif-channel').value, target:$('notif-target').value
+  });
+  if(r.ok){toast(`✓ تم تسجيل الإرسال لـ ${r.sent} طالب`,'ok');loadNotifications();}
+  else toast('⚠️ خطأ','er');
+}
+
+// ══════════════════════════════════════════════════
+// USERS [NEW-07]
+async function loadUsers(){
+  const users=await api('/api/users');
+  $('users-body').innerHTML=users.map(u=>`
+    <tr>
+      <td><code style="font-size:12px">${esc(u.username)}</code></td>
+      <td>${esc(u.full_name)||'—'}</td>
+      <td><span class="badge b-dept">${roleMap[u.role]||esc(u.role)}</span></td>
+      <td style="font-size:11px;color:var(--muted)">${esc(u.last_login)||'لم يدخل بعد'}</td>
+      <td><span class="badge ${u.active?'b-active':'b-withdrawn'}">${u.active?'نشط':'معطَّل'}</span></td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-ghost btn-sm" onclick="openUserEdit(${u.id},'${esc(u.username)}','${esc(u.full_name||'')}','${u.role}',${u.active})"><i class="ti ti-edit"></i></button>
+        ${u.active?`<button class="btn btn-ghost btn-sm" onclick="toggleUser(${u.id},false)" title="تعطيل"><i class="ti ti-user-off"></i></button>`
+          :`<button class="btn btn-ghost btn-sm" onclick="toggleUser(${u.id},true)" title="تفعيل"><i class="ti ti-user-check"></i></button>`}
+      </td>
+    </tr>`).join('');
+  enhanceTable(document.getElementById('users-table'));
+}
+function openUserModal(){
+  $('u-id').value='';$('u-username').value='';$('u-name').value='';$('u-pw').value='';$('u-role').value='reception';
+  $('user-modal-title').textContent='مستخدم جديد';
+  $('u-username').disabled=false;
+  $('u-active-row').style.display='none';
+  openModal('modal-user');
+}
+function openUserEdit(id,username,name,role,active){
+  $('u-id').value=id;$('u-username').value=username;$('u-name').value=name;$('u-pw').value='';
+  $('u-role').value=role;$('u-active').checked=active;
+  $('user-modal-title').textContent='تعديل المستخدم';
+  $('u-username').disabled=true;
+  $('u-active-row').style.display='block';
+  openModal('modal-user');
+}
+async function saveUser(){
+  const id=$('u-id').value;
+  const body={username:$('u-username').value.trim(), full_name:$('u-name').value.trim(),
+    role:$('u-role').value, password:$('u-pw').value};
+  if(id){body.active=$('u-active').checked; delete body.username;}
+  if(!id && (!body.username||!body.password)){toast('⚠️ اسم المستخدم وكلمة المرور مطلوبان','er');return;}
+  const r=await api(id?`/api/users/${id}`:'/api/users',id?'PUT':'POST',body);
+  if(r.ok){toast('✓ تم حفظ المستخدم','ok');closeModal('modal-user');loadUsers();}
+  else toast('⚠️ '+(r.msg||'خطأ'),'er');
+}
+async function toggleUser(id,active){
+  const r=await api(`/api/users/${id}`,'PUT',{active});
+  if(r.ok){toast(active?'✓ تم تفعيل المستخدم':'✓ تم تعطيل المستخدم','ok');loadUsers();}
+  else toast('⚠️ '+(r.msg||'خطأ'),'er');
+}
+
+// ══════════════════════════════════════════════════
+// ACTIVITY LOG [NEW-09]
+async function loadActivityLog(){
+  const logs=await api('/api/activity_log');
+  $('actlog-body').innerHTML=(logs||[]).map(l=>`
+    <tr><td><code style="font-size:11px">${esc(l.user)}</code></td>
+    <td><span class="badge b-dept">${esc(l.action)}</span></td>
+    <td style="font-size:12px">${esc(l.entity)||'—'}</td>
+    <td style="font-size:12px;color:var(--muted)">${esc(l.detail)||'—'}</td>
+    <td style="font-size:11px;color:var(--muted)">${esc(l.ip)}</td>
+    <td style="font-size:11px;color:var(--muted)">${esc(l.created_at)}</td></tr>`).join('');
+  enhanceTable(document.getElementById('actlog-table'));
+}
+
+// ══════════════════════════════════════════════════
+// CHANGE PASSWORD
+async function doChangePw(){
+  const old=$('cpw-old').value,nw=$('cpw-new').value,cf=$('cpw-cf').value;
+  if(!old||!nw||!cf){toast('⚠️ جميع الحقول مطلوبة','er');return;}
+  if(nw.length<6){toast('⚠️ كلمة المرور لا تقل عن 6 أحرف','er');return;}
+  if(nw!==cf){toast('⚠️ كلمتا المرور غير متطابقتين','er');return;}
+  const r=await api('/api/change_password','POST',{old_password:old,new_password:nw});
+  if(r.ok){toast('✓ تم تغيير كلمة المرور','ok');closeModal('modal-cpw');$('pw-banner').classList.add('hidden');}
+  else toast('⚠️ '+(r.msg||'خطأ'),'er');
+}
+
+// ══════════════════════════════════════════════════
+// BACKUP & EXPORT [NEW-02][NEW-03]
+function doBackup(){window.location.href='/api/backup';}
+
+// ══════════════════════════════════════════════════
+// [NEW-23] رفع وحذف شعار الأكاديمية
+async function uploadLogo(){
+  const input = document.getElementById('logo-file-input');
+  if(!input.files.length) return;
+  const formData = new FormData();
+  formData.append('logo', input.files[0]);
+  try{
+    const res = await fetch('/api/settings/logo', {method:'POST', body:formData});
+    const r = await res.json();
+    if(r.ok){
+      toast('✓ تم رفع الشعار بنجاح — سيظهر في كل الشاشات فوراً','ok',4000);
+      const bust = '?t=' + Date.now();
+      ['logo-preview','custom-logo','sidebar-custom-logo'].forEach(id=>{
+        const el = document.getElementById(id);
+        if(el) el.src = '/api/settings/logo' + bust;
+      });
+    } else {
+      toast('⚠️ '+(r.msg||'فشل رفع الشعار'),'er');
+    }
+  }catch(e){
+    toast('⚠️ تعذَّر الاتصال بالسيرفر','er');
+  }
+  input.value = '';
+}
+
+async function removeLogo(){
+  if(!confirm('هل أنت متأكد من حذف الشعار؟ سيرجع النظام للشعار الافتراضي.')) return;
+  const r = await api('/api/settings/logo','DELETE');
+  if(r.ok){
+    toast('✓ تم حذف الشعار','ok');
+    document.getElementById('logo-preview').style.display='none';
+    document.getElementById('logo-placeholder').style.display='block';
+  } else toast('⚠️ خطأ في الحذف','er');
+}
+
+function exportCSV(){window.location.href='/api/students/export_csv';}
+
+// ══════════════════════════════════════════════════
+// RESTORE [NEW-15]
+async function doRestore(){
+  const fileInput=$('restore-file');
+  if(!fileInput.files.length){toast('⚠️ اختر ملف النسخة الاحتياطية أولاً','er');return;}
+  const formData=new FormData();
+  formData.append('file',fileInput.files[0]);
+  $('restore-result').innerHTML='<div style="text-align:center;padding:12px"><div class="spinner" style="width:20px;height:20px;border:2px solid var(--bdr);border-top-color:var(--pl);border-radius:50%;animation:spin .6s linear infinite;display:inline-block"></div></div>';
+  try{
+    const res=await fetch('/api/restore',{method:'POST',body:formData});
+    const r=await res.json();
+    if(r.ok){
+      $('restore-result').innerHTML=`<div class="alert alert-success"><span>✅</span><div><div class="alert-txt">تمَّت الاستعادة بنجاح</div><div class="alert-sub">${r.msg}</div></div></div>`;
+      toast('✓ '+r.msg,'ok',5000);
+    } else {
+      $('restore-result').innerHTML=`<div class="alert alert-danger"><span>⚠️</span><div class="alert-txt">${r.msg||'خطأ في الاستعادة'}</div></div>`;
+    }
+  }catch(e){
+    $('restore-result').innerHTML=`<div class="alert alert-danger"><span>⚠️</span><div class="alert-txt">خطأ في رفع الملف</div></div>`;
+  }
+}
+
+// ══════════════════════════════════════════════════
+// TEACHERS [NEW-13]
+let teacherSearchTimer;
+function debounceTeacherSearch(){clearTimeout(teacherSearchTimer);teacherSearchTimer=setTimeout(loadTeachers,350);}
+
+async function loadTeachers(){
+  const q=$('teacher-search-q')?.value||'';
+  const status=$('teacher-filter-status')?.value||'';
+  const teachers=await api(`/api/teachers?q=${encodeURIComponent(q)}&status=${encodeURIComponent(status)}`);
+  const teacherStatusMap={active:'نشط',suspended:'موقوف',left:'ترك العمل'};
+  const teacherStatusClass={active:'b-active',suspended:'b-suspended',left:'b-withdrawn'};
+  const salaryTypeMap={fixed:'ثابت',per_session:'بالحصة',percentage:'نسبة'};
+  $('teachers-body').innerHTML=teachers.length?teachers.map(t=>`
+    <tr>
+      <td style="font-family:monospace;font-size:12px">${esc(t.code)}</td>
+      <td><a href="#" onclick="showTeacherDetail(${t.id});return false" style="color:var(--pl);font-weight:600">${esc(t.full_name)}</a></td>
+      <td>${esc(t.specialization)||'—'}</td>
+      <td>${(t.departments||[]).map(d=>`<span class="badge b-dept">${esc(d)}</span>`).join(' ')||'—'}</td>
+      <td>${esc(t.phone)||'—'}</td>
+      <td>${salaryTypeMap[t.salary_type]||esc(t.salary_type)}</td>
+      <td class="fw7">${t.salary_type==='percentage'?t.salary_amount+'%':fmt(t.salary_amount)}</td>
+      <td><span class="badge ${teacherStatusClass[t.status]||'b-active'}">${teacherStatusMap[t.status]||esc(t.status)}</span></td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-ghost btn-sm" onclick="openTeacherEdit(${t.id})" title="تعديل"><i class="ti ti-edit"></i></button>
+        <button class="btn btn-ghost btn-sm" onclick="deleteTeacher(${t.id})" title="حذف"><i class="ti ti-trash"></i></button>
+      </td>
+    </tr>`).join('')
+    :`<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:24px">لا يوجد مدرسون بعد</td></tr>`;
+  enhanceTable(document.getElementById('teachers-table'));
+}
+
+async function openTeacherModal(){
+  $('teacher-modal-title').textContent='مدرس جديد';
+  $('t-save-lbl').textContent='حفظ';
+  $('t-id').value='';
+  ['t-fn','t-sn','t-fam','t-nid','t-ph','t-email','t-spec','t-notes'].forEach(id=>$(id).value='');
+  $('t-salary-type').value='fixed'; $('t-salary-amount').value=''; $('t-hire-date').value='';
+  $('t-status').value='active';
+  const depts=await api('/api/departments');
+  $('t-depts').innerHTML=depts.map(d=>`<option value="${d.id}">${esc(d.name)}</option>`).join('');
+  openModal('modal-teacher');
+}
+
+async function openTeacherEdit(id){
+  const t=await api(`/api/teachers/${id}`);
+  $('teacher-modal-title').textContent='تعديل بيانات المدرس';
+  $('t-save-lbl').textContent='حفظ التعديلات';
+  $('t-id').value=t.id;
+  $('t-fn').value=t.first_name; $('t-sn').value=t.second_name; $('t-fam').value=t.family_name;
+  $('t-nid').value=t.national_id||''; $('t-ph').value=t.phone||''; $('t-email').value=t.email||'';
+  $('t-spec').value=t.specialization||''; $('t-salary-type').value=t.salary_type;
+  $('t-salary-amount').value=t.salary_amount||''; $('t-hire-date').value=t.hire_date||'';
+  $('t-status').value=t.status; $('t-notes').value=t.notes||'';
+  const depts=await api('/api/departments');
+  const currentDeptIds=(t.departments||[]).map(d=>d.id);
+  $('t-depts').innerHTML=depts.map(d=>`<option value="${d.id}" ${currentDeptIds.includes(d.id)?'selected':''}>${esc(d.name)}</option>`).join('');
+  openModal('modal-teacher');
+}
+
+async function saveTeacher(){
+  const id=$('t-id').value;
+  const selectedDepts=[...$('t-depts').selectedOptions].map(o=>parseInt(o.value));
+  const body={
+    first_name:$('t-fn').value.trim(), second_name:$('t-sn').value.trim(), family_name:$('t-fam').value.trim(),
+    national_id:$('t-nid').value.trim()||null, phone:$('t-ph').value.trim(), email:$('t-email').value.trim(),
+    specialization:$('t-spec').value.trim(), salary_type:$('t-salary-type').value,
+    salary_amount:parseFloat($('t-salary-amount').value)||0, hire_date:$('t-hire-date').value||null,
+    status:$('t-status').value, notes:$('t-notes').value.trim(), department_ids:selectedDepts
+  };
+  if(!body.first_name||!body.second_name||!body.family_name){toast('⚠️ الاسم الثلاثي مطلوب','er');return;}
+  const r=await api(id?`/api/teachers/${id}`:'/api/teachers', id?'PUT':'POST', body);
+  if(r.ok){
+    toast(id?'✓ تم تحديث بيانات المدرس':'✓ تم تسجيل المدرس! الكود: '+(r.code||''),'ok');
+    closeModal('modal-teacher'); loadTeachers();
+  } else toast('⚠️ '+(r.msg||'خطأ'),'er');
+}
+
+async function deleteTeacher(id){
+  if(!confirm('هل أنت متأكد من حذف هذا المدرس؟')) return;
+  const r=await api(`/api/teachers/${id}`,'DELETE');
+  if(r.ok){toast('✓ تم الحذف','ok');loadTeachers();}
+  else toast('⚠️ '+(r.msg||'لا يمكن الحذف'),'er');
+}
+
+async function showTeacherDetail(id){
+  const t=await api(`/api/teachers/${id}`);
+  const salaryTypeMap={fixed:'راتب ثابت',per_session:'بالحصة',percentage:'نسبة من الإيراد'};
+  alert(`${t.full_name}\nالكود: ${t.code}\nالتخصص: ${t.specialization||'—'}\nالهاتف: ${t.phone||'—'}\nنوع الراتب: ${salaryTypeMap[t.salary_type]}\nعدد الجلسات الأخيرة: ${t.recent_sessions.length}`);
+}
+
+// ══════════════════════════════════════════════════
+// ATTENDANCE [NEW-14]
+async function initAttendancePage(){
+  const batches=await api('/api/batches');
+  const options='<option value="">— اختر الدفعة —</option>'+batches.map(b=>`<option value="${b.id}">${esc(b.name)}</option>`).join('');
+  $('att-batch-select').innerHTML=options;
+  $('att-hist-batch').innerHTML='<option value="">كل الدفعات</option>'+batches.map(b=>`<option value="${b.id}">${esc(b.name)}</option>`).join('');
+  loadAttendanceSessions();
+}
+
+async function loadTodayAttendance(){
+  const batchId=$('att-batch-select').value;
+  if(!batchId){$('att-today-body').innerHTML='<div style="text-align:center;color:var(--muted);padding:30px">اختر دفعة لعرض طلابها</div>';return;}
+  const data=await api(`/api/attendance/batch/${batchId}/today`);
+  if(data.students.length===0){
+    $('att-today-body').innerHTML='<div style="text-align:center;color:var(--muted);padding:30px">لا يوجد طلاب نشطون في هذه الدفعة</div>';
+    return;
+  }
+  const statusOptions=[
+    {v:'present',l:'حاضر',c:'b-active'},{v:'absent',l:'غائب',c:'b-suspended'},
+    {v:'late',l:'متأخر',c:'b-partial'},{v:'excused',l:'بعذر',c:'b-dept'}
+  ];
+  $('att-today-body').innerHTML=`
+    ${data.session_exists?'<div class="alert alert-info" style="margin-bottom:12px"><span>ℹ️</span><span style="font-size:12px">يوجد سجل حضور مسبق لهذا اليوم — أي تعديل سيُحدِّثه.</span></div>':''}
+    <table><thead><tr><th>الكود</th><th>الطالب</th><th>الحالة</th></tr></thead>
+    <tbody>${data.students.map(s=>`
+      <tr><td style="font-family:monospace;font-size:12px">${esc(s.code)}</td>
+      <td>${esc(s.full_name)}</td>
+      <td>
+        <div style="display:flex;gap:5px" data-student-id="${s.id}">
+          ${statusOptions.map(opt=>`
+            <button class="btn btn-sm ${s.status===opt.v?'btn-primary':'btn-ghost'}" 
+              onclick="setAttStatus(${s.id},'${opt.v}',this)" data-status="${opt.v}">${opt.l}</button>
+          `).join('')}
+        </div>
+      </td></tr>`).join('')}
+    </tbody></table>
+    <div style="margin-top:16px;display:flex;gap:10px">
+      <input id="att-topic" placeholder="موضوع المحاضرة (اختياري)" style="flex:1;padding:9px 12px;border:1.5px solid var(--bdr);border-radius:7px;font-size:13px">
+      <button class="btn btn-success" onclick="saveTodayAttendance(${batchId},${data.session_id||'null'})"><i class="ti ti-check"></i> حفظ الحضور</button>
+    </div>`;
+  window._attCurrentStatuses={};
+  data.students.forEach(s=>window._attCurrentStatuses[s.id]=s.status);
+}
+
+function setAttStatus(studentId,status,btn){
+  window._attCurrentStatuses[studentId]=status;
+  const row=btn.closest('[data-student-id]');
+  row.querySelectorAll('button').forEach(b=>{
+    b.className=b.dataset.status===status?'btn btn-sm btn-primary':'btn btn-sm btn-ghost';
+  });
+}
+
+async function saveTodayAttendance(batchId,sessionId){
+  const records=Object.entries(window._attCurrentStatuses).map(([sid,status])=>({student_id:parseInt(sid),status}));
+  const topic=$('att-topic')?.value||'';
+  const today=new Date().toISOString().split('T')[0];
+  let r;
+  if(sessionId){
+    r=await apiOfflineSafe(`/api/attendance/sessions/${sessionId}`,'PUT',{topic,records},'تحديث حضور');
+  } else {
+    r=await apiOfflineSafe('/api/attendance/sessions','POST',{batch_id:batchId,session_date:today,topic,records},'تسجيل حضور');
+  }
+  if(r.ok){
+    toast(r._queued?r.msg:'✓ تم حفظ الحضور بنجاح', r._queued?'':'ok', r._queued?5000:2800);
+    loadTodayAttendance();
+  }
+  else toast('⚠️ '+(r.msg||'خطأ'),'er');
+}
+
+async function loadAttendanceSessions(){
+  const batchId=$('att-hist-batch')?.value||'';
+  const sessions=await api(`/api/attendance/sessions${batchId?'?batch_id='+batchId:''}`);
+  $('att-sessions-body').innerHTML=sessions.length?sessions.map(s=>`
+    <tr><td style="font-size:12px;color:var(--muted)">${esc(s.date)}</td>
+    <td><span class="badge b-dept">${esc(s.batch)}</span></td>
+    <td>${esc(s.teacher)}</td><td>${esc(s.topic)||'—'}</td>
+    <td class="text-ok fw7">${s.present}</td>
+    <td class="text-err fw7">${s.absent}</td>
+    <td class="text-warn fw7">${s.late}</td></tr>`).join('')
+    :'<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">لا توجد جلسات مسجَّلة بعد</td></tr>';
+}
+
+async function lookupStudentAttendance(code){
+  code=code.trim().toUpperCase();
+  if(code.length<8){$('att-student-result').innerHTML='';return;}
+  const res=await api(`/api/students?q=${encodeURIComponent(code)}&page=1`);
+  const s=(res.students||[]).find(x=>x.code===code);
+  if(!s){$('att-student-result').innerHTML='<div class="alert alert-danger" style="margin-top:12px"><span>⚠️</span><span>لم يُعثر على الطالب</span></div>';return;}
+  const data=await api(`/api/attendance/student/${s.id}`);
+  $('att-student-result').innerHTML=`
+    <div style="margin-top:16px">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">
+        <div class="stat" style="padding:11px"><div class="stat-val text-ok">${data.present}</div><div class="stat-lbl">حاضر</div></div>
+        <div class="stat" style="padding:11px"><div class="stat-val text-err">${data.absent}</div><div class="stat-lbl">غائب</div></div>
+        <div class="stat" style="padding:11px"><div class="stat-val text-warn">${data.late}</div><div class="stat-lbl">متأخر</div></div>
+        <div class="stat" style="padding:11px"><div class="stat-val">${data.attendance_rate}%</div><div class="stat-lbl">نسبة الحضور</div></div>
+      </div>
+      <table><thead><tr><th>التاريخ</th><th>الموضوع</th><th>الحالة</th></tr></thead>
+      <tbody>${data.history.map(h=>`<tr><td style="font-size:12px">${esc(h.date)}</td><td>${esc(h.topic)||'—'}</td>
+        <td><span class="badge ${h.status==='present'?'b-active':h.status==='absent'?'b-suspended':'b-partial'}">${esc(h.status)}</span></td></tr>`).join('')}</tbody></table>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════
+// UNIVERSAL SEARCH [NEW-16]
+let globalSearchTimer;
+function openGlobalSearch(){
+  openModal('modal-search');
+  setTimeout(()=>$('global-search-input')?.focus(),100);
+}
+function debounceGlobalSearch(){clearTimeout(globalSearchTimer);globalSearchTimer=setTimeout(doGlobalSearch,300);}
+
+async function doGlobalSearch(){
+  const q=$('global-search-input').value.trim();
+  if(q.length<2){$('global-search-results').innerHTML='';return;}
+  const r=await api(`/api/search?q=${encodeURIComponent(q)}`);
+  let html='';
+  if(r.students.length){
+    html+='<div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:6px">👥 الطلاب</div>';
+    html+=r.students.map(s=>`<div style="padding:9px 10px;border-radius:7px;cursor:pointer;display:flex;justify-content:space-between" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background=''" onclick="closeModal('modal-search');showPage('students',document.querySelectorAll('.s-item')[3]);setTimeout(()=>showDetail(${s.id}),200)">
+      <span>${esc(s.name)}</span><span class="badge b-dept">${esc(s.department)||'—'}</span></div>`).join('');
+  }
+  if(r.teachers.length){
+    html+='<div style="font-size:11px;color:var(--muted);font-weight:700;margin:10px 0 6px">🧑‍🏫 المدرسون</div>';
+    html+=r.teachers.map(t=>`<div style="padding:9px 10px;border-radius:7px;cursor:pointer" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background=''" onclick="closeModal('modal-search');showPage('teachers',document.querySelectorAll('.s-item')[6]);setTimeout(()=>showTeacherDetail(${t.id}),200)">
+      ${esc(t.name)} — ${esc(t.specialization)||'—'}</div>`).join('');
+  }
+  if(r.payments.length){
+    html+='<div style="font-size:11px;color:var(--muted);font-weight:700;margin:10px 0 6px">💰 المدفوعات</div>';
+    html+=r.payments.map(p=>`<div style="padding:9px 10px">إيصال ${esc(p.receipt_no)} — ${esc(p.student_name)} — ${fmt(p.amount)}</div>`).join('');
+  }
+  if(r.transactions.length){
+    html+='<div style="font-size:11px;color:var(--muted);font-weight:700;margin:10px 0 6px">📊 الخزينة</div>';
+    html+=r.transactions.map(t=>`<div style="padding:9px 10px">${esc(t.description)} — ${fmt(t.amount)}</div>`).join('');
+  }
+  $('global-search-results').innerHTML=html||'<div style="text-align:center;color:var(--muted);padding:20px">لا توجد نتائج</div>';
+}
+
+// ══════════════════════════════════════════════════
+// AI ASSISTANT [NEW-17]
+// ══════════════════════════════════════════════════
+// [NEW-22] المسح السريع للحضور بالباركود
+// ══════════════════════════════════════════════════
+let _scanLog = [];
+
+function initScanPage(){
+  _scanLog = [];
+  $('scan-log-body').innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:16px">لسه مفيش عمليات مسح النهاردة</td></tr>';
+  $('scan-count').textContent = '0 عملية';
+  $('scan-result').innerHTML = '';
+  setTimeout(()=>$('scan-input')?.focus(), 100);
+}
+
+async function processScan(){
+  const input = $('scan-input');
+  const code = input.value.trim();
+  if(!code) return;
+  input.value = '';
+  input.disabled = true;
+
+  const r = await api('/api/attendance/scan','POST',{code});
+
+  if(r.ok){
+    $('scan-result').innerHTML = `
+      <div class="alert alert-success" style="padding:16px;text-align:center">
+        <div style="font-size:32px;margin-bottom:6px">✅</div>
+        <div style="font-weight:800;font-size:16px">${esc(r.student_name)}</div>
+        <div style="font-size:12px;color:var(--muted)">${esc(r.student_code)} — ${esc(r.batch_name)}</div>
+        <div style="font-size:12px;margin-top:4px">${esc(r.msg)}</div>
+      </div>`;
+    _scanLog.unshift(r);
+    $('scan-count').textContent = `${_scanLog.length} عملية`;
+    $('scan-log-body').innerHTML = _scanLog.map(item=>`
+      <tr><td style="font-family:monospace;font-size:12px">${esc(item.time)}</td>
+      <td>${esc(item.student_name)}</td>
+      <td style="font-family:monospace;font-size:11px">${esc(item.student_code)}</td>
+      <td><span class="badge b-dept">${esc(item.batch_name)}</span></td></tr>`).join('');
+    enhanceTable(document.getElementById('scan-log-table'));
+  } else {
+    $('scan-result').innerHTML = `
+      <div class="alert alert-danger" style="padding:16px;text-align:center">
+        <div style="font-size:32px;margin-bottom:6px">⚠️</div>
+        <div style="font-weight:700">${esc(r.msg||'لم يُعثر على الطالب')}</div>
+      </div>`;
+  }
+
+  input.disabled = false;
+  input.focus();
+  setTimeout(()=>{ if($('scan-result')) $('scan-result').innerHTML=''; }, 4000);
+}
+
+function printStudentIdCard(sid){
+  window.open(`/api/students/${sid}/id_card`, '_blank');
+}
+
+function printBatchIdCards(batchId){
+  window.open(`/api/batches/${batchId}/id_cards`, '_blank');
+}
+
+async function loadAISuggestions(){
+  const suggestions=await api('/api/ai/suggestions');
+  $('ai-suggestions').innerHTML=suggestions.map(s=>
+    `<button class="btn btn-outline btn-sm" onclick="askAISuggestion('${s}')">${s}</button>`).join('');
+}
+function askAISuggestion(q){
+  $('ai-input').value=q;
+  sendAIQuestion();
+}
+function addAIMessage(text,isUser){
+  const area=$('ai-chat-area');
+  const div=document.createElement('div');
+  div.style.cssText=`background:${isUser?'#1a3c5e':'#eff6ff'};color:${isUser?'#fff':'#1a2433'};border:1px solid ${isUser?'#1a3c5e':'#bfdbfe'};border-radius:10px;padding:12px 14px;align-self:${isUser?'flex-end':'flex-start'};max-width:85%`;
+  // [BUG-23] رد المساعد الذكي قد يحتوي أسماء طلاب/مدرسين مُدخَلة من المستخدم — يجب تعقيمها قبل العرض
+  div.innerHTML=`<div style="font-size:13px;line-height:1.7;white-space:pre-line">${esc(text)}</div>`;
+  area.appendChild(div);
+  area.scrollTop=area.scrollHeight;
+}
+async function sendAIQuestion(){
+  const input=$('ai-input');
+  const q=input.value.trim();
+  if(!q) return;
+  addAIMessage(q,true);
+  input.value='';
+  const r=await api('/api/ai/ask','POST',{question:q});
+  if(r.ok) addAIMessage(r.answer,false);
+  else addAIMessage('⚠️ '+(r.msg||'حدث خطأ'),false);
+}
+
+// ══════════════════════════════════════════════════
+// [NEW-21] نظام العمل بدون إنترنت — طابور عمليات محلي + مزامنة تلقائية
+// ══════════════════════════════════════════════════
+// الفكرة: العمليات الأساسية (تسجيل طالب، دفعة، حضور، حركة مالية) تُحفَظ محلياً
+// في متصفح الجهاز (IndexedDB) لو النت مقطوع، وتُرفع تلقائياً للسيرفر بمجرد
+// عودة الاتصال — بدون أي تدخل يدوي من المستخدم.
+
+const OFFLINE_DB_NAME = 'gtech_offline_v1';
+const OFFLINE_STORE = 'pending_queue';
+let _offlineDB = null;
+
+function _openOfflineDB(){
+  return new Promise((resolve,reject)=>{
+    if(_offlineDB){resolve(_offlineDB);return;}
+    const req = indexedDB.open(OFFLINE_DB_NAME, 1);
+    req.onupgradeneeded = e=>{
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains(OFFLINE_STORE)){
+        db.createObjectStore(OFFLINE_STORE, {keyPath:'id', autoIncrement:true});
+      }
+    };
+    req.onsuccess = e=>{_offlineDB=e.target.result;resolve(_offlineDB);};
+    req.onerror = e=>reject(e);
+  });
+}
+
+async function _queueOfflineOperation(url, method, body, description){
+  const db = await _openOfflineDB();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(OFFLINE_STORE,'readwrite');
+    const store = tx.objectStore(OFFLINE_STORE);
+    const item = {url, method, body, description, queued_at: new Date().toISOString()};
+    const req = store.add(item);
+    req.onsuccess = ()=>resolve(req.result);
+    req.onerror = e=>reject(e);
+  });
+}
+
+async function _getOfflineQueue(){
+  const db = await _openOfflineDB();
+  return new Promise((resolve)=>{
+    const tx = db.transaction(OFFLINE_STORE,'readonly');
+    const store = tx.objectStore(OFFLINE_STORE);
+    const req = store.getAll();
+    req.onsuccess = ()=>resolve(req.result || []);
+    req.onerror = ()=>resolve([]);
+  });
+}
+
+async function _removeOfflineItem(id){
+  const db = await _openOfflineDB();
+  return new Promise((resolve)=>{
+    const tx = db.transaction(OFFLINE_STORE,'readwrite');
+    tx.objectStore(OFFLINE_STORE).delete(id);
+    tx.oncomplete = ()=>resolve();
+  });
+}
+
+async function updatePendingBadge(){
+  const queue = await _getOfflineQueue();
+  const badge = $('offline-pending-badge');
+  if(badge){
+    if(queue.length>0){badge.textContent=queue.length;badge.style.display='inline-flex';}
+    else{badge.style.display='none';}
+  }
+}
+
+// ── مراقبة حالة الاتصال الفعلية (navigator.onLine وحدها غير موثوقة) ──
+let _isReallyOnline = true;
+async function checkRealConnectivity(){
+  try{
+    const res = await fetch('/api/health',{cache:'no-store', signal:AbortSignal.timeout(4000)});
+    return res.ok;
+  }catch(e){return false;}
+}
+
+function setOfflineUI(offline){
+  const banner = $('offline-banner');
+  if(banner) banner.style.display = offline ? 'flex' : 'none';
+}
+
+async function refreshConnectivityStatus(){
+  const wasOffline = !_isReallyOnline;
+  _isReallyOnline = await checkRealConnectivity();
+  setOfflineUI(!_isReallyOnline);
+  if(_isReallyOnline){
+    const queue = await _getOfflineQueue();
+    if(queue.length>0) await syncOfflineQueue();
+    if(wasOffline) toast('✓ عاد الاتصال بالإنترنت — تمَّت المزامنة','ok',3500);
+  }
+  updatePendingBadge();
+}
+
+// ── معالجة الطابور: إعادة إرسال كل عملية بالترتيب ──
+let _syncing = false;
+async function syncOfflineQueue(){
+  if(_syncing) return;
+  _syncing = true;
+  try{
+    const queue = await _getOfflineQueue();
+    let syncedCount = 0;
+    for(const item of queue){
+      try{
+        const res = await fetch(item.url,{
+          method:item.method,
+          headers:{'Content-Type':'application/json'},
+          body: item.body ? JSON.stringify(item.body) : undefined
+        });
+        if(res.ok || res.status<500){
+          // نجحت العملية (أو رفضها السيرفر لسبب منطقي — امسحها من الطابور بعدم التكرار العشوائي)
+          await _removeOfflineItem(item.id);
+          syncedCount++;
+        } else {
+          break; // مشكلة سيرفر مؤقتة — أوقف ولا تكمل الباقي الآن
+        }
+      }catch(e){
+        break; // لسه مفيش نت فعلياً — أوقف المحاولة، هيعاد لاحقاً
+      }
+    }
+    if(syncedCount>0){
+      toast(`✓ تمَّت مزامنة ${syncedCount} عملية كانت في الانتظار`,'ok',4000);
+      // حدِّث الصفحة الحالية لعرض البيانات المُزامَنة
+      if(currentPage==='students') loadStudents();
+      if(currentPage==='dashboard') loadDashboard();
+      if(currentPage==='fees') loadFees();
+      if(currentPage==='finance') loadFinance();
+      if(currentPage==='attendance') initAttendancePage();
+    }
+    updatePendingBadge();
+  } finally {
+    _syncing = false;
+  }
+}
+
+/**
+ * غلاف آمن لأي عملية كتابة حساسة (POST/PUT) — لو فشل الاتصال يُخزِّن العملية
+ * محلياً بدل ما يفشل بالكامل، وتُرفع تلقائياً لاحقاً.
+ */
+async function apiOfflineSafe(url, method, body, description){
+  try{
+    const res = await fetch(url,{
+      method, headers:{'Content-Type':'application/json'},
+      body: body?JSON.stringify(body):undefined,
+      signal: AbortSignal.timeout(6000)
+    });
+    return await res.json();
+  }catch(e){
+    // فشل الاتصال فعلياً — خزِّن العملية محلياً بدل فقدها
+    await _queueOfflineOperation(url, method, body, description);
+    _isReallyOnline = false;
+    setOfflineUI(true);
+    updatePendingBadge();
+    return {ok:true, _queued:true,
+      msg:'⏳ لا يوجد اتصال حالياً — تمَّ حفظ العملية محلياً وستُرفع تلقائياً عند عودة الإنترنت'};
+  }
+}
+
+// فحص دوري كل 20 ثانية + عند تغيُّر حالة الشبكة من المتصفح نفسه
+window.addEventListener('online', refreshConnectivityStatus);
+window.addEventListener('offline', ()=>{_isReallyOnline=false; setOfflineUI(true);});
+setInterval(refreshConnectivityStatus, 20000);
+
+// ══════════════════════════════════════════════════
+// INIT
+
+window.onload=async()=>{
+  // [NEW-21] فحص حالة الاتصال ومزامنة أي عمليات معلَّقة من قبل فور فتح الصفحة
+  refreshConnectivityStatus();
+  // Load user info from login response stored in sessionStorage,
+  // or fetch from /api/license_status
+  const lic=await api('/api/license_status');
+  if(lic.client_name) $('s-client-name').textContent=lic.client_name;
+  // Read must_change_pw flag — if page just loaded after login, check URL param
+  const params=new URLSearchParams(location.search);
+
+  loadDashboard();
+  api('/api/departments').then(depts=>{
+    ['filter-dept'].forEach(id=>{
+      const el=$(id);
+      if(el) el.innerHTML='<option value="">كل الأقسام</option>'+depts.map(d=>`<option value="${esc(d.name)}">${esc(d.name)}</option>`).join('');
+    });
+  });
+
+  // Check must_change_pw — we store flag in meta tag set by Flask
+  const mustChange='{{ "true" if user.must_change_pw else "false" }}'==='true';
+  if(mustChange){
+    $('pw-banner').classList.remove('hidden');
+  }
+};
+</script>
+
+<!-- PWA Install Banner -->
+<div id="pwa-banner" style="display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+  background:#1a3c5e;color:#fff;padding:12px 20px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.4);
+  z-index:9998;display:none;align-items:center;gap:12px;max-width:92vw;direction:rtl">
+  <img src="/static/icons/icon-72x72.png" style="width:40px;height:40px;border-radius:8px">
+  <div>
+    <div style="font-weight:700;font-size:14px">ثبِّت GTech ERP</div>
+    <div style="font-size:12px;color:#b8cfe8">أضفه لشاشتك الرئيسية للوصول السريع</div>
+  </div>
+  <button id="pwa-install-btn" style="background:#e8a020;color:#0f2744;border:none;padding:8px 14px;
+    border-radius:8px;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap">تثبيت</button>
+  <button onclick="document.getElementById('pwa-banner').style.display='none'"
+    style="background:none;border:none;color:#b8cfe8;font-size:20px;cursor:pointer;padding:0 4px">✕</button>
+</div>
+
+<script>
+// ══ PWA Install Prompt ══
+let _deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _deferredPrompt = e;
+  // Show install banner after 3 seconds if not installed
+  setTimeout(() => {
+    const banner = document.getElementById('pwa-banner');
+    if (banner) { banner.style.display = 'flex'; }
+  }, 3000);
+});
+
+document.getElementById('pwa-install-btn')?.addEventListener('click', async () => {
+  if (!_deferredPrompt) return;
+  _deferredPrompt.prompt();
+  const { outcome } = await _deferredPrompt.userChoice;
+  _deferredPrompt = null;
+  document.getElementById('pwa-banner').style.display = 'none';
+  if (outcome === 'accepted') {
+    toast('✓ تمَّ تثبيت GTech ERP على شاشتك!', 'ok', 4000);
+  }
+});
+
+// Hide banner if already installed (standalone mode)
+if (window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true) {
+  document.getElementById('pwa-banner').style.display = 'none';
+}
+
+// iOS Safari: show manual instructions
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isSafari = /safari/i.test(navigator.userAgent) && !/chrome/i.test(navigator.userAgent);
+if (isIOS && isSafari && !window.navigator.standalone) {
+  setTimeout(() => {
+    const banner = document.getElementById('pwa-banner');
+    if (banner) {
+      banner.querySelector('#pwa-install-btn').textContent = 'كيف؟';
+      banner.querySelector('#pwa-install-btn').onclick = () => {
+        alert('لتثبيت التطبيق على iPhone/iPad:\n\n1. اضغط زر المشاركة ⬆️\n2. اختر "إضافة إلى الشاشة الرئيسية"\n3. اضغط "إضافة"');
+      };
+      banner.style.display = 'flex';
+    }
+  }, 3000);
+}
+
+// Handle shortcut actions from manifest shortcuts
+const params = new URLSearchParams(location.search);
+const action = params.get('action');
+if (action === 'payment') {
+  window.addEventListener('load', () => setTimeout(() => openPayModal(), 800));
+} else if (action === 'student') {
+  window.addEventListener('load', () => setTimeout(() => openStudentModal(), 800));
+}
+</script>
+</body>
+</html>

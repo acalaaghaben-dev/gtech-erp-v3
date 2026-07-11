@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>بطاقة الطالب — {{ student.full_name }}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#f0f4f8;padding:24px;direction:rtl}
+.actions{max-width:500px;margin:0 auto 16px;display:flex;gap:8px;justify-content:center}
+.btn{padding:9px 18px;border-radius:8px;border:none;background:#1a3c5e;color:#fff;font-size:14px;cursor:pointer;font-weight:700}
+.card{
+  width:500px; margin:0 auto; background:linear-gradient(135deg,#1a3c5e 0%,#2563a8 100%);
+  border-radius:16px; padding:22px; color:#fff; box-shadow:0 10px 30px rgba(0,0,0,.2);
+  position:relative; overflow:hidden;
+}
+.card::before{content:'';position:absolute;top:-40px;left:-40px;width:140px;height:140px;
+  background:rgba(255,255,255,.08);border-radius:50%}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;position:relative;z-index:1}
+.institution{font-size:14px;font-weight:800;display:flex;align-items:center;gap:6px}
+.institution img{max-height:22px;max-width:60px;border-radius:3px}
+.card-type{font-size:10px;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:20px}
+.student-name{font-size:22px;font-weight:800;margin-bottom:4px}
+.student-code{font-size:13px;color:#cfe0f5;font-family:monospace;margin-bottom:16px}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;margin-bottom:18px;position:relative;z-index:1}
+.info-grid div span{color:#cfe0f5;display:block;font-size:10px;margin-bottom:2px}
+.barcode-box{background:#fff;border-radius:10px;padding:12px;text-align:center;position:relative;z-index:1}
+.barcode-box img{max-width:100%;height:60px}
+.barcode-text{color:#1a3c5e;font-family:monospace;font-size:12px;margin-top:4px;letter-spacing:1px}
+@media print{
+  body{background:#fff;padding:0}
+  .actions{display:none}
+  .card{box-shadow:none}
+}
+</style>
+</head>
+<body>
+<div class="actions">
+  <button class="btn" onclick="window.print()">🖨️ طباعة البطاقة</button>
+</div>
+<div class="card">
+  <div class="card-header">
+    <span class="institution">
+      <img src="/api/settings/logo" alt="" onerror="this.style.display='none'">
+      🎓 {{ institution }}
+    </span>
+    <span class="card-type">بطاقة طالب</span>
+  </div>
+  <div class="student-name">{{ student.full_name }}</div>
+  <div class="student-code">{{ student.code }}</div>
+  <div class="info-grid">
+    <div><span>القسم</span>{{ student.department.name if student.department else '—' }}</div>
+    <div><span>الدفعة</span>{{ student.batch.name if student.batch else '—' }}</div>
+    <div><span>الهاتف</span>{{ student.phone or '—' }}</div>
+    <div><span>الحالة</span>{{ 'نشط' if student.status=='active' else student.status }}</div>
+  </div>
+  <div class="barcode-box">
+    <img src="/api/students/{{ student.id }}/barcode.png" alt="باركود">
+    <div class="barcode-text">{{ student.code }}</div>
+  </div>
+</div>
+</body>
+</html>

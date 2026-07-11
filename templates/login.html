@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GTech ERP — تسجيل الدخول</title>
+<!-- PWA: تثبيت الاختصار على الشاشة -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1a3c5e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GTech ERP">
+<link rel="apple-touch-icon" href="/static/icons/icon-192x192.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/static/icons/icon-152x152.png">
+<link rel="apple-touch-icon" sizes="144x144" href="/static/icons/icon-144x144.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/static/icons/icon-192x192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/static/icons/icon-512x512.png">
+<!-- PWA Service Worker Registration -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js', {scope: '/'})
+      .then(reg => console.log('GTech SW registered:', reg.scope))
+      .catch(err => console.warn('GTech SW error:', err));
+  });
+}
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:linear-gradient(135deg,#0f2744 0%,#1a3c5e 60%,#2563a8 100%);min-height:100vh;display:flex;align-items:center;justify-content:center}
+.card{background:#fff;border-radius:16px;padding:40px;width:390px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.logo{text-align:center;margin-bottom:28px}
+.logo h1{font-size:28px;color:#1a3c5e;font-weight:800}
+.logo p{color:#5a6a7e;font-size:13px;margin-top:4px}
+.fg{margin-bottom:16px}
+label{display:block;font-size:13px;font-weight:700;color:#374151;margin-bottom:6px}
+.input-wrap{position:relative}
+input{width:100%;padding:11px 14px;border:1.5px solid #d1dae6;border-radius:8px;font-size:14px;outline:none;transition:border-color .2s;background:#fff}
+input:focus{border-color:#2563a8}
+.eye-btn{position:absolute;left:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#9ca3af;font-size:16px;padding:4px}
+.eye-btn:hover{color:#374151}
+.btn-login{width:100%;padding:12px;background:#1a3c5e;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-login:hover{background:#2563a8}
+.btn-login:disabled{background:#9ca3af;cursor:not-allowed}
+.error{color:#dc2626;font-size:13px;margin-top:10px;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;display:none}
+.version{text-align:center;color:#9ca3af;font-size:11px;margin-top:18px}
+/* Change password modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:12px;padding:28px;width:360px}
+.modal h2{font-size:17px;margin-bottom:20px;color:#1a3c5e}
+.modal .btn-login{margin-top:16px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <img id="custom-logo" src="/api/settings/logo" alt="شعار الأكاديمية"
+         style="max-width:120px;max-height:80px;display:none;margin:0 auto 8px"
+         onload="this.style.display='block';document.getElementById('default-logo-text').style.display='none';"
+         onerror="this.style.display='none';">
+    <h1 id="default-logo-text">🎓 GTech ERP</h1>
+    <p>نظام إدارة الأكاديمية المتكامل</p>
+  </div>
+  <div class="fg">
+    <label for="username">اسم المستخدم</label>
+    <!-- [BUG-08] NO value pre-filled -->
+    <input type="text" id="username" placeholder="أدخل اسم المستخدم" autocomplete="username">
+  </div>
+  <div class="fg">
+    <label for="password">كلمة المرور</label>
+    <div class="input-wrap">
+      <input type="password" id="password" placeholder="أدخل كلمة المرور"
+             autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="eye-btn" onclick="togglePw()" type="button" tabindex="-1">👁</button>
+    </div>
+  </div>
+  <button class="btn-login" id="btn-login" onclick="doLogin()">
+    <span id="btn-text">تسجيل الدخول</span>
+  </button>
+  <div class="error" id="err"></div>
+  <div class="version">الإصدار 5.0.0 • GTech Academy ERP</div>
+</div>
+
+<!-- [BUG-09] Force password change modal -->
+<div class="modal-bg" id="modal-cpw">
+  <div class="modal">
+    <h2>🔒 يجب تغيير كلمة المرور</h2>
+    <p style="font-size:13px;color:#6b7280;margin-bottom:16px">لأمان حسابك، يُرجى تعيين كلمة مرور جديدة قبل المتابعة.</p>
+    <div class="fg">
+      <label>كلمة المرور الحالية</label>
+      <div class="input-wrap">
+        <input type="password" id="cp-old" placeholder="كلمة المرور الحالية">
+      </div>
+    </div>
+    <div class="fg">
+      <label>كلمة المرور الجديدة (6 أحرف على الأقل)</label>
+      <div class="input-wrap">
+        <input type="password" id="cp-new" placeholder="كلمة المرور الجديدة">
+      </div>
+    </div>
+    <div class="fg">
+      <label>تأكيد كلمة المرور</label>
+      <div class="input-wrap">
+        <input type="password" id="cp-confirm" placeholder="أعد إدخال كلمة المرور">
+      </div>
+    </div>
+    <div class="error" id="cp-err"></div>
+    <button class="btn-login" onclick="doChangePw()">حفظ وتسجيل الدخول</button>
+  </div>
+</div>
+
+<script>
+function togglePw(){
+  const i=document.getElementById('password');
+  i.type=i.type==='password'?'text':'password';
+}
+
+async function doLogin(){
+  const username=document.getElementById('username').value.trim();
+  const password=document.getElementById('password').value;
+  const btn=document.getElementById('btn-login');
+  const txt=document.getElementById('btn-text');
+  const err=document.getElementById('err');
+
+  if(!username||!password){err.textContent='أدخل اسم المستخدم وكلمة المرور';err.style.display='block';return;}
+
+  btn.disabled=true; txt.textContent='جاري التحقق...';
+  err.style.display='none';
+
+  try{
+    const res=await fetch('/login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username,password})
+    });
+    const data=await res.json();
+    if(data.ok){
+      if(data.must_change_pw){
+        // show force change modal
+        document.getElementById('modal-cpw').classList.add('open');
+        btn.disabled=false; txt.textContent='تسجيل الدخول';
+      } else {
+        txt.textContent='✓ جاري التحميل...';
+        window.location.href='/';
+      }
+    } else {
+      err.textContent=data.msg||'خطأ في تسجيل الدخول';
+      err.style.display='block';
+      btn.disabled=false; txt.textContent='تسجيل الدخول';
+    }
+  } catch(e){
+    err.textContent='خطأ في الاتصال. تحقق من الإنترنت.';
+    err.style.display='block';
+    btn.disabled=false; txt.textContent='تسجيل الدخول';
+  }
+}
+
+async function doChangePw(){
+  const old=document.getElementById('cp-old').value;
+  const nw=document.getElementById('cp-new').value;
+  const cf=document.getElementById('cp-confirm').value;
+  const err=document.getElementById('cp-err');
+  const btn=document.querySelector('#modal-cpw .btn-login');
+  err.style.display='none';
+  if(!old||!nw||!cf){err.textContent='جميع الحقول مطلوبة';err.style.display='block';return;}
+  if(nw.length<6){err.textContent='كلمة المرور لا تقل عن 6 أحرف';err.style.display='block';return;}
+  if(nw!==cf){err.textContent='كلمة المرور وتأكيدها غير متطابقتين';err.style.display='block';return;}
+
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'جاري الحفظ...';
+
+  try{
+    const res = await fetch('/api/change_password',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({old_password:old,new_password:nw})
+    });
+
+    let data;
+    try{
+      data = await res.json();
+    }catch(parseErr){
+      // السيرفر رجَّع رد مش JSON (مثال: صفحة خطأ HTML أو انتهت الجلسة) — بدل التعليق الصامت
+      err.textContent = `حدث خطأ غير متوقَّع (كود ${res.status}). أعد تحميل الصفحة وحاول تسجيل الدخول من جديد.`;
+      err.style.display = 'block';
+      btn.disabled = false; btn.textContent = originalText;
+      return;
+    }
+
+    if(data.ok){
+      btn.textContent = '✓ تم الحفظ، جاري التحميل...';
+      window.location.href = '/';
+    } else {
+      err.textContent = data.msg || 'خطأ';
+      err.style.display = 'block';
+      btn.disabled = false; btn.textContent = originalText;
+    }
+  } catch(networkErr){
+    // فشل الاتصال بالشبكة فعلياً (النت وقع لحظة الضغط) — رسالة واضحة بدل التعليق
+    err.textContent = 'تعذَّر الاتصال بالسيرفر. تحقَّق من الإنترنت وحاول مرة أخرى.';
+    err.style.display = 'block';
+    btn.disabled = false; btn.textContent = originalText;
+  }
+}
+</script>
+</body>
+</html>

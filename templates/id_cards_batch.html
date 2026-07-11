@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>بطاقات دفعة {{ batch.name }}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#f0f4f8;padding:20px;direction:rtl}
+.actions{max-width:900px;margin:0 auto 16px;display:flex;gap:8px;justify-content:center}
+.btn{padding:9px 18px;border-radius:8px;border:none;background:#1a3c5e;color:#fff;font-size:14px;cursor:pointer;font-weight:700}
+.grid{max-width:900px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.card{
+  background:linear-gradient(135deg,#1a3c5e 0%,#2563a8 100%);
+  border-radius:12px; padding:16px; color:#fff; break-inside:avoid; position:relative; overflow:hidden;
+}
+.card::before{content:'';position:absolute;top:-30px;left:-30px;width:100px;height:100px;
+  background:rgba(255,255,255,.08);border-radius:50%}
+.institution{font-size:11px;font-weight:800;margin-bottom:8px;position:relative;z-index:1;display:flex;align-items:center;gap:5px}
+.institution img{max-height:16px;max-width:40px;border-radius:2px}
+.student-name{font-size:16px;font-weight:800;margin-bottom:2px;position:relative;z-index:1}
+.student-code{font-size:11px;color:#cfe0f5;font-family:monospace;margin-bottom:10px;position:relative;z-index:1}
+.info{font-size:10px;color:#cfe0f5;margin-bottom:10px;position:relative;z-index:1}
+.barcode-box{background:#fff;border-radius:8px;padding:8px;text-align:center;position:relative;z-index:1}
+.barcode-box img{max-width:100%;height:40px}
+.barcode-text{color:#1a3c5e;font-family:monospace;font-size:10px;margin-top:2px}
+.empty{text-align:center;color:#64748b;padding:40px;max-width:900px;margin:0 auto}
+@media print{
+  body{background:#fff;padding:0}
+  .actions{display:none}
+  .grid{gap:10px}
+  .card{box-shadow:none;border:1px solid #ddd}
+}
+</style>
+</head>
+<body>
+<div class="actions">
+  <button class="btn" onclick="window.print()">🖨️ طباعة كل البطاقات ({{ students|length }})</button>
+</div>
+{% if students %}
+<div class="grid">
+  {% for student in students %}
+  <div class="card">
+    <div class="institution">
+      <img src="/api/settings/logo" alt="" onerror="this.style.display='none'">
+      🎓 {{ institution }} — {{ batch.name }}
+    </div>
+    <div class="student-name">{{ student.full_name }}</div>
+    <div class="student-code">{{ student.code }}</div>
+    <div class="info">{{ student.department.name if student.department else '—' }} | {{ student.phone or '—' }}</div>
+    <div class="barcode-box">
+      <img src="/api/students/{{ student.id }}/barcode.png" alt="باركود">
+      <div class="barcode-text">{{ student.code }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty">لا يوجد طلاب نشطون في هذه الدفعة</div>
+{% endif %}
+</body>
+</html>

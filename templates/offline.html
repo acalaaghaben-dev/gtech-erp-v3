@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GTech ERP — غير متصل</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:linear-gradient(135deg,#0f2744,#1a3c5e);
+     min-height:100vh;display:flex;align-items:center;justify-content:center;color:#fff;direction:rtl}
+.card{text-align:center;padding:40px 32px;max-width:380px;width:90%}
+.icon{font-size:80px;margin-bottom:20px;display:block}
+h1{font-size:24px;font-weight:800;margin-bottom:10px}
+p{color:#b8cfe8;line-height:1.7;font-size:15px;margin-bottom:28px}
+.btn{display:inline-block;background:#e8a020;color:#0f2744;padding:12px 28px;
+     border-radius:10px;font-weight:800;font-size:15px;text-decoration:none;
+     border:none;cursor:pointer}
+.btn:active{opacity:.85}
+.status{margin-top:20px;font-size:12px;color:#7a9cbf}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;
+     background:#ef4444;margin-left:6px;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+</style>
+</head>
+<body>
+<div class="card">
+  <span class="icon">📡</span>
+  <h1>لا يوجد اتصال بالإنترنت</h1>
+  <p>GTech ERP يحتاج اتصالاً بالإنترنت للعمل. تحقق من الشبكة ثم حاول مرة أخرى.</p>
+  <button class="btn" onclick="tryReconnect()">🔄 إعادة المحاولة</button>
+  <div class="status">
+    <span class="dot" id="dot"></span>
+    <span id="status-txt">غير متصل</span>
+  </div>
+</div>
+<script>
+function tryReconnect(){
+  window.location.reload();
+}
+// Auto-retry when connection restored
+window.addEventListener('online', () => {
+  document.getElementById('dot').style.background = '#22c55e';
+  document.getElementById('status-txt').textContent = 'تمَّ الاتصال، جاري التحميل...';
+  setTimeout(() => window.location.href = '/', 800);
+});
+window.addEventListener('offline', () => {
+  document.getElementById('dot').style.background = '#ef4444';
+  document.getElementById('status-txt').textContent = 'غير متصل';
+});
+</script>
+</body>
+</html>
