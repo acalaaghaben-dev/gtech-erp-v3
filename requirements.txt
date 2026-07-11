@@ -1,13 +1,19 @@
-flask==3.0.0
-flask-sqlalchemy==3.1.1
-flask-login==0.6.3
-werkzeug==3.0.1
-psycopg2-binary==2.9.9
-gunicorn==21.2.0
-requests==2.31.0
-APScheduler==3.11.3
-google-auth==2.35.0
-google-auth-oauthlib==1.2.1
-google-api-python-client==2.149.0
-python-barcode==0.15.1
-Pillow==10.4.0
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "app.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "/static/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "app.py"
+    }
+  ]
+}
